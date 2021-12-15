@@ -20,7 +20,7 @@ note : To use React you need to download Nodejs First run ```$ node -v``` in a p
 ```
 2-Change to project dir.
 ```
- $ cd Flicker-FrontEnd
+ $ cd cinema
 ```
 3- Download All dependencies( aka packages we will will be used need to be on your local machine)
 ```
