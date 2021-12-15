@@ -17,6 +17,8 @@ note : To use React you need to download Nodejs First run ```$ node -v``` in a p
 1-Clone Repo
 ```
  $ git clone https://github.com/ahmedmoh1234/ConsultationProject.git
+  or use the bellow command for easy pushing
+ $  $ git clone -b <branchName> https://github.com/ahmedmoh1234/ConsultationProject.git
 ```
 2-Change to project dir.
 ```
