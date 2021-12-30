@@ -1,0 +1,35 @@
+.nav_movies{
+position: fixed;
+top:0;
+width: 100%;
+padding: 8px;
+display: flex;
+z-index: 12;
+height: 50px;
+
+justify-content: space-between;
+transition-timing-function: ease-in;
+transition: all 0.5s;
+
+}
+
+.nav_blackOut{
+    background-color: rgb(0, 0, 0);
+}
+
+
+.star_logo{
+    position: fixed;
+    left:20px;
+    top:5px;
+    height: 42px;
+    object-fit: contain;
+
+}
+
+.nav_left_data{
+    position: fixed;
+    right: 90px;
+    width: 30px;
+    object-fit: contain;
+}

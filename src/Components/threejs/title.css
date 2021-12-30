@@ -1,7 +1,7 @@
 :root {
   --bg-color: #000000;
   --typewriterSpeed: 2s;
-  --typewriterCharacters: 12;
+  --typewriterCharacters: 11;
   --clr-neon: rgb(255, 255, 255);
   --clr-bg: rgb(0, 0, 0);
 }
@@ -10,7 +10,7 @@
 	box-sizing: border-box;
 }
 
-h1 {
+.title {
   font-size: clamp(1rem, 3vw + 1rem, 4rem);
   color: #ffffff;
   position: absolute;
@@ -21,8 +21,8 @@ h1 {
   transform: translate(-50%, -50%);
   font-weight:200;
 }
-h1::before,
-h1::after {
+.title::before,
+.title::after {
   content: "";
   position: absolute;
   top: 0;
@@ -31,13 +31,13 @@ h1::after {
   left: 0;
 }
 
-h1::before {
+.title::before {
   background: var(--bg-color);
   animation: typewriter var(--typewriterSpeed)
     steps(var(--typewriterCharacters)) 1s forwards;
 }
 
-h1::after {
+.title::after {
   width: 0.125em;
   background: rgb(255, 255, 255);
   animation: typewriter var(--typewriterSpeed)
