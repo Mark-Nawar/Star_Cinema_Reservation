@@ -5,7 +5,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 
 //Require User model 
-const User = require("./models/users");
+const User  = require("./models/users");
+const Movie = require("./models/movies");
+
+
+
+
 
 //To add record (row) to the database
 /*
@@ -14,8 +19,8 @@ const User = require("./models/users");
     const user = new User 
     (
         {
-            id : 1
-            username : ahmed
+            id : 1,
+            username : ahmed,
             password : test
         }
     );
@@ -82,3 +87,47 @@ mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
 .catch( (err)    => console.log("ERROR ", err)      );
 
 
+app.get("/addUser",(req,res)=>
+{
+    res.sendFile("./form.html",{root : __dirname});
+});
+
+app.get("/sUser",(req,res)=>
+{
+
+    
+    //Send the instance to the DB
+    User.find()
+    .then((result)=>
+    {
+        console.log("Search done", result);
+        res.send(result);
+    })
+    .catch((err)=>
+    {
+        console.log(err);
+    });
+});
+
+app.use(express.urlencoded({ extended: true }));
+
+app.post("/user",(req,res)=>
+{
+    const user = new User(req.body);
+    //console.log(req.body);
+    //console.log(user);
+
+    user.save()
+    .then((result)=>
+    {
+        console.log("Added");
+        res.redirect("/sUser");
+    })
+    .catch((err)=>
+    {
+        console.log(err);
+    });
+
+   
+
+});

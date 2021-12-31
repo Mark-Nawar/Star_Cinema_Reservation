@@ -1,0 +1,22 @@
+JWF File
+To pass data:
+1- res.render('index', {object});
+2- res.json()
+3- res.jwf() ???
+
+
+Middleware:
+- helmet -> security
+- sessions
+- Cookies
+- validations
+- morgan -> logger
+
+
+* NoSQL
+Table -> collection
+Collection stores documents
+Documnets are a record
+format of documnets are very similar to json
+
+mongoose -> API for mongoDB
