@@ -16,11 +16,14 @@ const reservationSchema = new Schema
             required    : true,
             ref         : "Movie"
         },
-        occupiedSeats :
-        {
-            type        : [Number],
-            required    : true
-        }
+        occupiedSeats : 
+        [
+            {
+
+                type        : Number,
+                required    : false
+            }
+        ]
     }
 );
 
