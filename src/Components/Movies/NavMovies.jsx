@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "react-bootstrap";
 import "../Movies/NavMovies.css";
-function NavMovies() {
+function NavMovies({ whereIam }) {
   const [show, changeShow] = useState(false);
 
   useEffect(() => {
@@ -24,11 +24,19 @@ function NavMovies() {
       />
 
       <div className="nav_left_data">
-        <Link to="/signup" style={{ textDecoration: "none" }}>
+        {whereIam == 1 ?(
+        <Link to="/pastReservations" style={{ textDecoration: "none" }}>
           <Button variant="dark" size="sm">
             reservations
           </Button>
         </Link>
+        ):(
+        <Link to="/" style={{ textDecoration: "none" }}>
+          <Button variant="dark" size="sm">
+           BackHome
+          </Button>
+        </Link>
+        )}
       </div>
     </div>
   );

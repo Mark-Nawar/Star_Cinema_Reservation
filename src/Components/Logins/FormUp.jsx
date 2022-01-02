@@ -14,6 +14,7 @@ const FormUp = () => {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const history = useNavigate();
+  
   // to be added for after JWT ( tokens are ready) validations and api call for signUp
   //   async function handleSubmit(e) {
   //     e.preventDefault();

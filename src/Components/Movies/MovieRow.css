@@ -9,15 +9,16 @@
 .row__posters::-webkit-scrollbar{
     display: none;
 }
-.row__poster{
+
+.row__poster img{
     object-fit :contain;
-    width: 100%;
     max-height: 200px;
     transition: transform 500ms;
     margin-left: 10px;
+    padding-right: 10px;
 }
 
-.row__poster:hover{
+.row__poster img:hover{
     transform: scale(1.08);
 }
 

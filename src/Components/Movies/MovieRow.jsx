@@ -1,6 +1,38 @@
 import React, { useState, useEffect } from "react";
-import "../Movies/MovieRow.css"
+import { NavLink } from "react-router-dom";
+import "../Movies/MovieRow.css";
 //import axios from "axios";
+const movies = [
+  {
+    id: 1,
+    name: "Spider-Man(No Way Home)",
+    duration: 3,
+    price: 10,
+    movieImage: "https://images.alphacoders.com/119/thumb-1920-1195168.jpg",
+  },
+  {
+    id: 2,
+    name: "Spider-Man(No Way Home)",
+    duration: 3,
+    price: 12,
+    movieImage: "https://images.alphacoders.com/119/thumb-1920-1195168.jpg",
+  },
+  {
+    id: 3,
+    name: "Spider-Man(No Way Home)",
+    duration: 3,
+    price: 8,
+    movieImage: "https://images.alphacoders.com/119/thumb-1920-1195168.jpg",
+  },
+  {
+    id: 4,
+    name: "Spider-Man(No Way Home)",
+    duration: 3,
+    price: 9,
+    movieImage: "https://images.alphacoders.com/119/thumb-1920-1195168.jpg",
+  },
+];
+
 
 function MovieRow({ category, fetchURL }) {
   // const [movies, setMovies] = useState([]);
@@ -13,41 +45,23 @@ function MovieRow({ category, fetchURL }) {
   //   }
   //   fetchData();
   // }, [fetchURL]);
-
   return (
     <div className="movieRow">
-      {/* <h2>{category}</h2> */}
-      {/* <div className="row__poster">
-        {movies.map((movies) => (
-          <img key={movie.id} className="row__poster" src={movie.poster_path} alt={movie.name} />
-        ))}
-      </div> */}
-      <h2 className="titleMovie">Action</h2>
+      <h2 className="titleMovie">{category}</h2>
       <div className="row__posters">
-        
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-          <img className="row__poster" src="https://sm.ign.com/t/ign_in/gallery/s/spider-man/spider-man-far-from-home-official-movie-posters_epch.1080.jpg" />
-
+       <div className="row__poster">
+        {movies.map((movie) => (
+          <NavLink
+          to={"/step2"}
+          state={{ movie: movie}}
+          className="row__poster"
+        >
+          <a>
+            <img key={movie.id} src={movie.movieImage} alt={movie.name}/>
+          </a>
+        </NavLink>
+        ))}
+      </div>
       </div>
     </div>
   );

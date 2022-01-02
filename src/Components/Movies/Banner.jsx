@@ -1,15 +1,15 @@
 import React from "react";
 import "../Movies/MovieRow.css"
 
-function Banner() {
+function Banner({bannerText , ImageUrl}) {
   return (
     <header className="banner" style={{
         backgroundSize :"cover",
-        backgroundImage : 'url(https://i.imgur.com/duNO2Zx.png)',
+        backgroundImage : `url(${ImageUrl})`,
         backgroundPosition : "50% 20%",
     }}>
       <div className="banner_contents">
-          <h1 className="banner_title">Step-1 : Choose Your Movie!</h1>
+          <h1 className="banner_title">{bannerText}</h1>
       </div>
       <div className="banner_fadder"/>
     </header>
