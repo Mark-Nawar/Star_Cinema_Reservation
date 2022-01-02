@@ -8,8 +8,30 @@ const mongoose = require("mongoose");
 const User  = require("./models/users");
 const Movie = require("./models/movies");
 
+//Create a server from Express
+const app = express();
+
+//Port number to listen to
+const port = process.env.PORT || 5000;
 
 
+//To be able to read from req.body
+app.use(express.urlencoded({ extended: true }));
+
+
+//Connect to mongoDB
+const dbURI = 'mongodb+srv://cinema:star123@cluster0.l3vsk.mongodb.net/cinema?retryWrites=true&w=majority';
+mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
+.then(  (result) => 
+{
+    //If connected successfully, listen to the port
+    console.log("Connected to DB");
+    app.listen(port, (req,res)=>
+    {
+        console.log(`Listening to port ${port}`);
+    })
+})
+.catch( (err)    => console.log("ERROR ", err)      );
 
 
 //To add record (row) to the database
@@ -64,64 +86,31 @@ const Movie = require("./models/movies");
 */
 
 
-//Create a server from Express
-const app = express();
-
-
-//Port number to listen to
-const port = process.env.PORT || 5000;
-
-
-//Connect to mongoDB
-const dbURI = 'mongodb+srv://cinema:star123@cluster0.l3vsk.mongodb.net/cinema?retryWrites=true&w=majority';
-mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
-.then(  (result) => 
+app.post("/signin",(req,res)=>
 {
-    //If connected successfully, listen to the port
-    console.log("Connected to DB");
-    app.listen(port, (req,res)=>
-    {
-        console.log(`Listening to port ${port}`);
-    })
-})
-.catch( (err)    => console.log("ERROR ", err)      );
-
-
-app.get("/addUser",(req,res)=>
-{
-    res.sendFile("./form.html",{root : __dirname});
+    //let userName = req.body.firstName;
 });
 
-app.get("/sUser",(req,res)=>
+app.post("/signup",(req,res)=>
 {
-
-    
-    //Send the instance to the DB
-    User.find()
-    .then((result)=>
-    {
-        console.log("Search done", result);
-        res.send(result);
-    })
-    .catch((err)=>
-    {
-        console.log(err);
-    });
+    //let userName = req.body.firstName;
 });
 
-app.use(express.urlencoded({ extended: true }));
+
+
+
 
 app.post("/user",(req,res)=>
 {
     const user = new User(req.body);
-    //console.log(req.body);
+    console.log(req.body.firstName);
     //console.log(user);
 
     user.save()
     .then((result)=>
     {
         console.log("Added");
-        res.redirect("/sUser");
+        //res.redirect("/sUser");
     })
     .catch((err)=>
     {

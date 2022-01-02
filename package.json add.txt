@@ -1,0 +1,7 @@
+package.json
+express
+jsonwebtoken
+mongoose
+
+
+"proxy": "http://localhost:5000"
