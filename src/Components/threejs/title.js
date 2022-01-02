@@ -9,7 +9,7 @@ function Title() {
 
   return (
     <div>
-      <h1>Space Cinema</h1>
+      <h1 className="title">Star Cinema</h1>
       <p className="subtitle">Into the deep space and beyond....</p>
       <a className={`neon-button signup`} onClick={handleClick1}>Sign Up</a>
       <a className={`neon-button signin`} onClick={handleClick2}>Sign In</a>
