@@ -71,10 +71,10 @@ app.get("/addMovieEvent", async (req,res)=>
     let startTime       = req.body.startTime;
     let endTime         = req.body.endTime;
     let screeningRoom   = req.body.screeningRoom;
-    let seatsAva        = req.body.seatsAva;
+    let occuSeats       = req.body.occuSeats;
 
     
-    let done            = await addMovieEvent(movieId,date, startTime, endTime, screeningRoom, seatsAva);
+    let done            = await addMovieEvent(movieId,date, startTime, endTime, screeningRoom, occuSeats);
 
     if (done == 0)
     {
@@ -112,40 +112,56 @@ app.post("/movieEvents/:movieEventID", async (req,res)=>
 
     //get token
     let token = req.headers["x-access-token"];
-    jwt.verify(token, secretStr, async (err, decodedToken)=>
+    
+    try
+    {
+        let decodedToken = jwt.verify(token, secretStr);
+
+        
+        let username1   = decodedToken.username;
+        let userID      = await searchUserUsername(username1);
+        if (userID == null)
+        {
+            res.send("CANNOT reserve");
+            return;
+        }
+
+        let movieEvent  = await searchMovieEventByID(movieEventID);
+        if (movieEvent == null)
+        {
+            res.send("CANNOT reserve");
+            return;
+        }
+
+
+        let resv = new Reservation
+        ({
+            user            : userID._id,
+            movieEvent      : movieEventID,
+            occupiedSeats   : seats
+
+        });
+
+        
+        await resv.save();
+
+        //Add occupied seats to the movieEvent
+        let newOccu = seats.concat(movieEvent.occuSeats)
+        //newOccu += seats;
+        
+        await MovieEvent.findByIdAndUpdate(movieEventID, {occuSeats : newOccu});
+
+        res.send("Reserved");
+       
+    }
+    catch(err)
     {
         if (err)
         {
             res.redirect("/signin");
             return;
         }
-        else
-        {
-            let username1   = decodedToken.username;
-            let userID      = await searchUserUsername(username1);
-
-
-            let resv = new Reservation
-            ({
-                user            : userID._id,
-                movieEvent      : movieEventID,
-                occupiedSeats   : seats
-
-            });
-
-            try
-            {
-                await resv.save();
-                res.send("Reserved");
-
-            }
-            catch(err)
-            {
-                console.log(err);
-                res.send("Error");
-            }
-        }
-    });
+    }
 });
 
 const searchMovieEvent = async(movieId, date, sTime, eTime, screeningRoom) =>
@@ -168,6 +184,20 @@ const searchMovieEvent = async(movieId, date, sTime, eTime, screeningRoom) =>
         return null;
     }
 };
+
+const searchMovieEventByID = async(eventID) =>
+{
+    try
+    {
+        return await MovieEvent.findById(eventID);
+    }
+    catch (err)
+    {
+        console.log(err);
+        return null;
+    }
+};
+
 
 const addMovieEvent = async(movieId, date, sTime, eTime, screenRoom, occuSeats) =>
 {
@@ -513,10 +543,13 @@ const createToken = async (username)=>
 
     var stringifiedHeader = CryptoJS.enc.Utf8.parse(JSON.stringify(header));
 
+    var currentDate = Math.round(Date.now() / 1000) + 1800;
+    //console.log(currentDate);
     var payload = 
     {
         "username" : username,
-        //"exp"       : /////////========================================
+        //Exp is the no of seconds from 1-1-1970
+        "exp"       : currentDate
     }
     var stringifiedPayload = CryptoJS.enc.Utf8.parse(JSON.stringify(payload));
 
