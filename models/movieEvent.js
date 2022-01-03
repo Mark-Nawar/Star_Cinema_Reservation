@@ -35,7 +35,7 @@ const movieEventSchema = new Schema
         //     type     : Number,
         //     required : true
         // },
-        seatsAva:   //no of seat available
+        occuSeats:   //no of seat available
         [
             {
             type     : Number,

@@ -14,7 +14,7 @@ const reservationSchema = new Schema
         {
             type        : mongoose.Types.ObjectId,
             required    : true,
-            ref         : "Movie"
+            ref         : "MoiveEvent"
         },
         occupiedSeats : 
         [

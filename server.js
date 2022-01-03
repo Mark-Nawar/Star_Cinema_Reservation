@@ -1,6 +1,7 @@
 //Require Express package
 const express = require("express");
 
+//Require JSON Web Token
 const jwt = require("jsonwebtoken");
 
 jwt.verify
@@ -13,6 +14,7 @@ const mongoose = require("mongoose");
 const User  = require("./models/users");
 const Movie = require("./models/movies");
 const MovieEvent = require("./models/movieEvent");
+const Reservation = require("./models/reservations");
 
 const secretStr = "C++ Fo2";
 
@@ -48,6 +50,163 @@ mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
 
 
 
+
+
+
+
+// app.get("/searchRes", async (req,res)=>
+// {
+//     let username = req.body.username;
+//     let movieId = req.body.id;
+
+//     res.send(await seachResrv(username, movieId));
+// });
+
+//====================================="MovieEvent" Collection==============================
+
+app.get("/addMovieEvent", async (req,res)=>
+{
+    let movieId         = req.body.id;
+    let date            = req.body.date;
+    let startTime       = req.body.startTime;
+    let endTime         = req.body.endTime;
+    let screeningRoom   = req.body.screeningRoom;
+    let seatsAva        = req.body.seatsAva;
+
+    
+    let done            = await addMovieEvent(movieId,date, startTime, endTime, screeningRoom, seatsAva);
+
+    if (done == 0)
+    {
+        res.send("Movie event added");
+    }
+    else if (done == -2)
+    {
+        res.send("Movie event exists");
+    }
+    else if (done == -3)
+    {
+        res.send("Movie does NOT exists");
+    }
+    else
+    {
+        res.send("Movie event was NOT added");
+    }
+});
+
+app.get("/movieEvents/:movieID", async (req,res)=>
+{
+    let movieID = req.params.movieID;
+
+    //Get all MovieEvent for the id
+    res.send(await searchMovieEventByMovieID(movieID) );
+});
+
+app.post("/movieEvents/:movieEventID", async(req,res)=>
+{
+    //Reserve MovieEvent
+
+    //================TODO==============TO BE TESTED
+    let movieEventID    = req.params.movieEventID;
+    let seats           = req.body.seats;
+
+    //get token
+    let token = req.headers["x-access-token"];
+    let {err,Token} = await jwt.verify(token, secretStr);
+    
+    if(err)
+    {
+        console.log(err);
+        res.send("Error in token");
+    }
+    else
+    {
+        res.send(Token);
+    }
+
+});
+
+const searchMovieEvent = async(movieId, date, sTime, eTime, screeningRoom) =>
+{
+    try
+    {
+        let result = await MovieEvent.findOne
+        ({
+            movie           : movieId, 
+            date            : date,  
+            startTime       : sTime, 
+            endTime         : eTime,
+            screeningRoom   : screeningRoom
+        });
+        return result;
+    }
+    catch (err)
+    {
+        console.log(err);
+        return null;
+    }
+};
+
+const addMovieEvent = async(movieId, date, sTime, eTime, screenRoom, occuSeats) =>
+{
+    //get _id for the movie
+    let objID           = await searchMovieID(movieId);///========================================================
+    if (objID == null)
+    {
+        return -3;  //movie does not exists
+    }
+
+    //If event exists, return false
+    let result = await searchMovieEvent(objID._id,date,sTime,eTime,screenRoom,occuSeats);
+    if (result != null)
+    {
+        return -2;  //event exists
+    }
+
+    
+
+    const movieEvent = new MovieEvent
+    ({
+        movie           : objID._id,
+        date            : date,
+        startTime       : sTime,
+        endTime         : eTime,
+        screeningRoom   : screenRoom,
+        occuSeats        : occuSeats
+    });
+
+    
+
+    try
+    {
+        await movieEvent.save();
+        return 0;   //no error
+    }
+    catch (err)
+    {
+        console.log(err);
+        return -1;  //error
+    }
+};
+
+const searchMovieEventByMovieID = async (movieID) =>
+{
+    try
+    {
+        return await MovieEvent.find({movie : movieID});
+    }
+    catch(err)
+    {
+        console.log(err);
+        return null;
+    }
+};
+
+//=====================================================================================
+
+
+
+//====================================="User"==================================================
 app.post("/signin", async (req,res)=>
 {
     let userName = req.body.username;
@@ -60,7 +219,7 @@ app.post("/signin", async (req,res)=>
         {
             //Create token and send it
             let tok =  await createToken(userName);
-            console.log(tok);
+            //console.log(tok);
 
             //Send token
             res.send(tok);
@@ -100,97 +259,10 @@ app.post("/signup", async (req,res)=>
     }
 });
 
-
-
 app.get("/searchUser", async (req,res)=>
 {
     res.sendFile("./form.html", {root : __dirname});
 });
-
-app.get("/movie", async (req,res)=>
-{
-    let id = req.body.id;
-
-    let temp = await searchMovieCustomID(id);
-    console.log(  temp  );
-
-    
-});
-
-app.get("/addMovie", async (req,res)=>
-{
-    let id          = req.body.id;
-    let title       = req.body.title;
-    let poster      = req.body.poster;
-    let category    = req.body.category; 
-
-    let done = await addMovie(id,title,poster,category);
-
-    if (done)
-    {
-        res.send("Movie added");
-    }
-    else
-    {
-        res.send("Movie was NOT added");
-    }
-});
-
-app.get("/addMovieEvent", async (req,res)=>
-{
-    let movieId         = req.body.id;
-    let date            = req.body.date;
-    let startTime       = req.body.startTime;
-    let endTime         = req.body.endTime;
-    let screeningRoom   = req.body.screeningRoom;
-    let seatsAva        = req.body.seatsAva;
-
-    
-    let done            = await addMovieEvent(movieId,date, startTime, endTime, screeningRoom, seatsAva);
-
-    if (done == 0)
-    {
-        res.send("Movie event added");
-    }
-    else if (done == -2)
-    {
-        res.send("Movie event exists");
-    }
-    else if (done == -3)
-    {
-        res.send("Movie does NOT exists");
-    }
-    else
-    {
-        res.send("Movie event was NOT added");
-    }
-});
-
-const createToken = async (username)=>
-{
-    var header = 
-    {
-        "alg": "HS256",
-        "typ": "JWT"
-    };
-
-    var stringifiedHeader = CryptoJS.enc.Utf8.parse(JSON.stringify(header));
-
-    var payload = 
-    {
-        "username" : username
-    }
-    var stringifiedPayload = CryptoJS.enc.Utf8.parse(JSON.stringify(payload));
-
-    var token =  base64url(stringifiedHeader) + "." + base64url(stringifiedPayload);
-    
-    var sign = CryptoJS.HmacSHA256(token, secretStr);
-    var signCo = base64url(sign);
-    var sToken = token + "." + signCo;
-
-    return sToken;
-
-};
 
 const addUser = async ( userName, email, password, fName, lName, role) =>
 {
@@ -211,7 +283,7 @@ const addUser = async ( userName, email, password, fName, lName, role) =>
     try 
     {    
         await user.save();
-        console.log("User with email ",user.email, " was added");
+        //console.log("User with email ",user.email, " was added");
     }
     catch(err)
     {
@@ -244,35 +316,11 @@ const searchUser = async (email, username) =>
     };
 };
 
-const base64url =  (source) => 
+const searchUserUsername = async (username) =>
 {
-    encodedSource = CryptoJS.enc.Base64.stringify(source);
-  
-    encodedSource = encodedSource.replace(/=+$/, '');
-    encodedSource = encodedSource.replace(/\+/g, '-');
-    encodedSource = encodedSource.replace(/\//g, '_');
-  
-    return encodedSource;
-};
-
-const searchMovie = async(id,title) =>
-{
-    let resultId;
-    let resultTitle;
-
-    try
+    try 
     {
-        resultId        = await Movie.findOne({id       : id});
-        resultTitle     = await Movie.findOne({title    : title});
-
-        if ( resultId != null || resultTitle != null)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
+        return await User.findOne({username : username});
     }
     catch (err)
     {
@@ -280,32 +328,138 @@ const searchMovie = async(id,title) =>
     }
 };
 
-const searchMovieCustomID = async(id) =>
+const searchUserReser = async (username) =>
+{
+    try
+    {
+        let user = await searchUserUsername(username);
+        if (username == null)
+        {
+            return null;
+        }
+
+
+    }
+    catch(err)
+    {
+
+    }
+};
+//=====================================================================================
+
+
+
+
+
+//====================================="Movie" Collection==============================
+
+app.get("/searchMovie", async (req,res)=>
+{
+    let movieId = req.body.id;
+
+    //retruns null if movie not found
+    res.send( await searchMovieID(movieId));
+});
+
+app.get("/searchMovieAll", async (req,res)=>
+{
+    let title       = req.body.title;
+    let category    = req.body.category;
+
+    //retruns null if movie not found
+    res.send( await searchMovieAll(title,category));
+});
+
+app.get("/searchMovieCat", async (req,res)=>
+{
+    let category = req.body.category;
+
+    res.send(await searchMovieCat(category));
+});
+
+app.get("/addMovie", async (req,res)=>
+{
+    let title       = req.body.title;
+    let poster      = req.body.poster;
+    let category    = req.body.category; 
+
+    let done = await addMovie(title,poster,category);
+
+    if (done)
+    {
+        res.send("Movie added");
+    }
+    else
+    {
+        res.send("Movie was NOT added");
+    }
+});
+
+const searchMovieID = async(id) =>
 {
     let resultId;
 
     try
     {
-        resultId        = await Movie.findOne({id       : id});
+        resultId        = await Movie.findById(id);
         return resultId;
-        
     }
     catch (err)
+    {
+        console.log(err);
+        return null;
+    }
+};
+
+const searchMovieAll = async(title, category) =>
+{
+    try
+    {
+        return await Movie.findOne({title : title, category : category});
+    }
+    catch (err)
+    {
+        console.log(err);
+        return null;
+    }
+};
+
+
+
+const seachResrveOfMovie = async(username, movieID) =>
+{
+    let userObjID = await searchUserUsername(username);
+
+    if (userObjID == null)
+    {
+        return null;
+    }
+
+    return await Reservation.find({user : userObjID._id, movie : movieID});
+    //console.log(userObjID._id.toString(), movieObjID._id.toString());
+};
+
+const searchMovieCat = async(category) =>
+{
+    try
+    {
+        return await Movie.find({category : category});
+    }
+    catch(err)
     {
         console.log(err);
     }
 };
 
-const addMovie = async(id, title, poster, category ) =>
+const addMovie = async(title, poster, category ) =>
 {
-    if ( await searchMovie(id,title))
+    if ( await searchMovieAll(title, category) != null)
     {
         return false;
     }
 
     const movie = new Movie
     ({
-        id          : id,
         title       : title,
         poster      : poster,
         category    : category
@@ -323,68 +477,59 @@ const addMovie = async(id, title, poster, category ) =>
     }
 };
 
-const searchMovieEvent = async(movieId, date, sTime, eTime, screeningRoom) =>
+//==========================================================================
+
+
+
+const createToken = async (username)=>
 {
-    try
+    var header = 
     {
-        let result = await MovieEvent.findOne
-        ({
-            movie           : movieId, 
-            date            : date,  
-            startTime       : sTime, 
-            endTime         : eTime,
-            screeningRoom   : screeningRoom
-        });
-        return result;
-    }
-    catch (err)
+        "alg": "HS256",
+        "typ": "JWT"
+    };
+
+    var stringifiedHeader = CryptoJS.enc.Utf8.parse(JSON.stringify(header));
+
+    var payload = 
     {
-        console.log(err);
-        return null;
+        "username" : username,
+        //"exp"       : /////////========================================
     }
+    var stringifiedPayload = CryptoJS.enc.Utf8.parse(JSON.stringify(payload));
+
+    var token =  base64url(stringifiedHeader) + "." + base64url(stringifiedPayload);
+    
+    var sign = CryptoJS.HmacSHA256(token, secretStr);
+    var signCo = base64url(sign);
+    var sToken = token + "." + signCo;
+
+    return sToken;
+
 };
 
-const addMovieEvent = async(movieId, date, sTime, eTime, screenRoom, seatAvailable) =>
+
+
+const base64url =  (source) => 
 {
-    //get _id for the movie
-    let objID           = await searchMovieCustomID(movieId);
-    if (objID == null)
-    {
-        return -3;  //movie does not exists
-    }
-
-    //If event exists, return false
-    let result = await searchMovieEvent(objID,date,sTime,eTime,screenRoom,seatAvailable);
-    if (result != null)
-    {
-        return -2;  //event exists
-    }
-
-    
-
-    const movieEvent = new MovieEvent
-    ({
-        movie           : objID,
-        date            : date,
-        startTime       : sTime,
-        endTime         : eTime,
-        screeningRoom   : screenRoom,
-        seatsAva        : seatAvailable
-    });
-
-    
-
-    try
-    {
-        await movieEvent.save();
-        return 0;   //no error
-    }
-    catch (err)
-    {
-        console.log(err);
-        return -1;  //error
-    }
+    encodedSource = CryptoJS.enc.Base64.stringify(source);
+  
+    encodedSource = encodedSource.replace(/=+$/, '');
+    encodedSource = encodedSource.replace(/\+/g, '-');
+    encodedSource = encodedSource.replace(/\//g, '_');
+  
+    return encodedSource;
 };
+
+
+
+
+
+
+
+
+
+
 //To add record (row) to the database
 /*
     //The following lines should be inside a app.get()
