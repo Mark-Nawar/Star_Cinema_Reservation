@@ -4,44 +4,25 @@ const Schema = mongoose.Schema;
 const movieSchema = new Schema
 (
     {
+        id :
+        {
+            type     : Number,
+            required : true
+        },
         title :
         {
             type     : String,
             required : true
         },
-        date :
-        {
-            type     : Date, 
-            required : true
-        },
-        startTime :
-        {
-            type     : Number,
-            required : true
-        },
-        endTime :
-        {
-            type     : Number,
-            required : true
-        },
-        screeningRoom :
-        {
-            type     : Number,
-            required : true
-        },
+        
         poster:
         {
-            type     : Buffer,
+            type     : String,
             required : true
         },
-        noOfSeats :
+        category :
         {
-            type     : Number,
-            required : true
-        },
-        noOfSeatsAva:   //no of seat available
-        {
-            type     : Number,
+            type     : String,
             required : true
         }
        

@@ -23,7 +23,8 @@ const reservationSchema = new Schema
                 type        : Number,
                 required    : false
             }
-        ]
+        ],
+        
     }
 );
 

@@ -12,6 +12,7 @@ const mongoose = require("mongoose");
 //Require User model 
 const User  = require("./models/users");
 const Movie = require("./models/movies");
+const MovieEvent = require("./models/movieEvent");
 
 const secretStr = "C++ Fo2";
 
@@ -24,6 +25,7 @@ const port = process.env.PORT || 5000;
 
 //To recognize incoming input as json object
 app.use(express.json());
+
 //To be able to read from req.body
 app.use(express.urlencoded({ extended: true }));
 
@@ -98,17 +100,71 @@ app.post("/signup", async (req,res)=>
     }
 });
 
-app.get("/addReserv", async (req,res)=>
-{
 
-});
 
 app.get("/searchUser", async (req,res)=>
 {
     res.sendFile("./form.html", {root : __dirname});
 });
 
+app.get("/movie", async (req,res)=>
+{
+    let id = req.body.id;
 
+    let temp = await searchMovieCustomID(id);
+    console.log(  temp  );
+
+    
+});
+
+app.get("/addMovie", async (req,res)=>
+{
+    let id          = req.body.id;
+    let title       = req.body.title;
+    let poster      = req.body.poster;
+    let category    = req.body.category; 
+
+    let done = await addMovie(id,title,poster,category);
+
+    if (done)
+    {
+        res.send("Movie added");
+    }
+    else
+    {
+        res.send("Movie was NOT added");
+    }
+});
+
+app.get("/addMovieEvent", async (req,res)=>
+{
+    let movieId         = req.body.id;
+    let date            = req.body.date;
+    let startTime       = req.body.startTime;
+    let endTime         = req.body.endTime;
+    let screeningRoom   = req.body.screeningRoom;
+    let seatsAva        = req.body.seatsAva;
+
+    
+    let done            = await addMovieEvent(movieId,date, startTime, endTime, screeningRoom, seatsAva);
+
+    if (done == 0)
+    {
+        res.send("Movie event added");
+    }
+    else if (done == -2)
+    {
+        res.send("Movie event exists");
+    }
+    else if (done == -3)
+    {
+        res.send("Movie does NOT exists");
+    }
+    else
+    {
+        res.send("Movie event was NOT added");
+    }
+});
 
 const createToken = async (username)=>
 {
@@ -199,9 +255,136 @@ const base64url =  (source) =>
     return encodedSource;
 };
 
+const searchMovie = async(id,title) =>
+{
+    let resultId;
+    let resultTitle;
 
+    try
+    {
+        resultId        = await Movie.findOne({id       : id});
+        resultTitle     = await Movie.findOne({title    : title});
 
+        if ( resultId != null || resultTitle != null)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    catch (err)
+    {
+        console.log(err);
+    }
+};
 
+const searchMovieCustomID = async(id) =>
+{
+    let resultId;
+
+    try
+    {
+        resultId        = await Movie.findOne({id       : id});
+        return resultId;
+        
+    }
+    catch (err)
+    {
+        console.log(err);
+    }
+};
+
+const addMovie = async(id, title, poster, category ) =>
+{
+    if ( await searchMovie(id,title))
+    {
+        return false;
+    }
+
+    const movie = new Movie
+    ({
+        id          : id,
+        title       : title,
+        poster      : poster,
+        category    : category
+    });
+
+    try
+    {
+        await movie.save();
+        return true;
+    }
+    catch (err)
+    {
+        console.log(err);
+        return false;
+    }
+};
+
+const searchMovieEvent = async(movieId, date, sTime, eTime, screeningRoom) =>
+{
+    try
+    {
+        let result = await MovieEvent.findOne
+        ({
+            movie           : movieId, 
+            date            : date,  
+            startTime       : sTime, 
+            endTime         : eTime,
+            screeningRoom   : screeningRoom
+        });
+        return result;
+    }
+    catch (err)
+    {
+        console.log(err);
+        return null;
+    }
+};
+
+const addMovieEvent = async(movieId, date, sTime, eTime, screenRoom, seatAvailable) =>
+{
+    //get _id for the movie
+    let objID           = await searchMovieCustomID(movieId);
+    if (objID == null)
+    {
+        return -3;  //movie does not exists
+    }
+
+    //If event exists, return false
+    let result = await searchMovieEvent(objID,date,sTime,eTime,screenRoom,seatAvailable);
+    if (result != null)
+    {
+        return -2;  //event exists
+    }
+
+    
+
+    const movieEvent = new MovieEvent
+    ({
+        movie           : objID,
+        date            : date,
+        startTime       : sTime,
+        endTime         : eTime,
+        screeningRoom   : screenRoom,
+        seatsAva        : seatAvailable
+    });
+
+    
+
+    try
+    {
+        await movieEvent.save();
+        return 0;   //no error
+    }
+    catch (err)
+    {
+        console.log(err);
+        return -1;  //error
+    }
+};
 //To add record (row) to the database
 /*
     //The following lines should be inside a app.get()
