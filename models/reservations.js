@@ -10,7 +10,7 @@ const reservationSchema = new Schema
             required    : true,
             ref         : "User"
         },
-        movie :
+        movieEvent :
         {
             type        : mongoose.Types.ObjectId,
             required    : true,

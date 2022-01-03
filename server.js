@@ -102,7 +102,7 @@ app.get("/movieEvents/:movieID", async (req,res)=>
     res.send(await searchMovieEventByMovieID(movieID) );
 });
 
-app.post("/movieEvents/:movieEventID", async(req,res)=>
+app.post("/movieEvents/:movieEventID", async (req,res)=>
 {
     //Reserve MovieEvent
 
@@ -112,18 +112,40 @@ app.post("/movieEvents/:movieEventID", async(req,res)=>
 
     //get token
     let token = req.headers["x-access-token"];
-    let {err,Token} = await jwt.verify(token, secretStr);
-    
-    if(err)
+    jwt.verify(token, secretStr, async (err, decodedToken)=>
     {
-        console.log(err);
-        res.send("Error in token");
-    }
-    else
-    {
-        res.send(Token);
-    }
+        if (err)
+        {
+            res.redirect("/signin");
+            return;
+        }
+        else
+        {
+            let username1   = decodedToken.username;
+            let userID      = await searchUserUsername(username1);
 
+
+            let resv = new Reservation
+            ({
+                user            : userID._id,
+                movieEvent      : movieEventID,
+                occupiedSeats   : seats
+
+            });
+
+            try
+            {
+                await resv.save();
+                res.send("Reserved");
+
+            }
+            catch(err)
+            {
+                console.log(err);
+                res.send("Error");
+            }
+        }
+    });
 });
 
 const searchMovieEvent = async(movieId, date, sTime, eTime, screeningRoom) =>
