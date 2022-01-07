@@ -1,6 +1,6 @@
 ==========================================BACKEND=================================================
 
-- On deleting movie, delete all movie events			
+- On deleting movie, delete all movie events			DONE		
 - On deleting movieEvent, delete all reservations		DONE
 - Add movie post request					DONE
 - Edit movie

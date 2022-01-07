@@ -451,25 +451,15 @@ app.post("/deleteMovieEvent",async (req,res) =>
     
         try
         {
-            let delCountRes = await Reservation.deleteMany(
-                    {
-                        movieEvent : movieEventId
-                    }
-                );   
-            
-            let deleted = await MovieEvent.findByIdAndDelete(movieEventId); 
-            
-            // console.log(delCountRes);
-            // console.log(deleted);
-
-            if (delCountRes.deletedCount == 0 && deleted == null)
-            {
-                res.send("Could not delete Movie Event");
-            }
-            else
-            {
-                res.send("Deleted");
-            }
+           let deleted = await deleteMovieEvent(movieEventId);
+           if (deleted == -1)
+           {
+               res.send("Could not delete Movie Event");
+           }
+           else
+           {
+               res.send("Deleted");
+           }
         }
         
         catch (err)
@@ -478,8 +468,6 @@ app.post("/deleteMovieEvent",async (req,res) =>
             return;
         }   
     }
-
-
 
 });
 
@@ -624,11 +612,17 @@ const searchMovieEventByUserID = async (userID) =>
     }
 };
 
-const deleteMovieEvent = async (movieEventID) =>
+const deleteMovieEvent = async (movieEventId) =>
 {
-    let found = await MovieEvent.findOneAndDelete(movieEventID);
+    let delCountRes = await Reservation.deleteMany(
+        {
+            movieEvent : movieEventId
+        }
+    );   
 
-    if (found == null)
+    let deleted = await MovieEvent.findByIdAndDelete(movieEventId); 
+
+    if (delCountRes.deletedCount == 0 && deleted == null)
     {
         return -1;
     }
@@ -750,26 +744,63 @@ app.post("/editMovie", async(req,res)=>
 
 });
 
-app.get("/deleteMovie", async(req,res)=>
+app.post("/deleteMovie", async(req,res)=>
 {
-    let movieID = req.body.movieID;
+    let jToken          = req.headers["x-access-token"];
+    console.log(jToken);
+    let role            = checkToken(jToken,secretStr);
 
-    try
+    console.log(role);
+
+    if (role == -1)             //Unverified
     {
-        let docs = await Movie.findByIdAndRemove(movieID);
-        if (docs == null)
-        {
-            res.send("Movie not found");
-            return;
-        }
-        res.send("Deleted");
+        res.send("Unverified");
         return;
     }
-    catch(err)
+    else if (role != 2)         //Not a manager
     {
-        console.log(err);
-        res.send("Error");
+        res.send("Not Manager");
         return;
+    }
+    else                        //Manager
+    {
+
+        let movieID = req.body.movieID;
+
+        try
+        {
+            let docs = await Movie.findByIdAndRemove(movieID);
+            if (docs == null)
+            {
+                res.send("Movie not found");
+                return;
+            }
+            else
+            {
+                
+                let movieEventsOfMovieId = await MovieEvent.find(
+                    {
+                        movie : movieID
+                    }
+                    );
+                    
+                    for (let i = 0; i < movieEventsOfMovieId.length; i++)
+                    {
+                        let MovieEventID = movieEventsOfMovieId[i]._id;
+                        await deleteMovieEvent(MovieEventID);
+                    }
+
+                    res.send("Deleted");
+                    
+                    return;
+            }
+        }
+        catch(err)
+        {
+            console.log(err);
+            res.send("Error");
+            return;
+        }
     }
 });
 
