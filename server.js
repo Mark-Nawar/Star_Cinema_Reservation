@@ -864,20 +864,21 @@ app.post("/deleteReservation", async (req,res) =>
     let role            = checkToken(jToken,secretStr);
     let movieEventID    = req.body.movieEventID;
     let user            = req.body.userID;
+    let occuSeats       = req.body.occuSeats;
 
     if (role == -1)             //Unverified
     {
         res.send("Unverified");
         return;
     }
-    else if (role != 2)         //Not a manager
-    {
-        res.send("Not Manager");
-        return;
-    }
+    // else if (role != 2)         //Not a manager
+    // {
+    //     res.send("Not Manager");
+    //     return;
+    // }
     else                        //Manager
     {
-        let found = await deleteReservation(movieEventID,user);
+        let found = await deleteReservation(movieEventID,user,occuSeats);
         
         if (found == 0)         //Found
         {
@@ -1046,18 +1047,40 @@ const searchReservation = async(movieEventID, userID) =>
 
 };
 
-const deleteReservation = async (movieEventID, userID) =>
+const deleteReservation = async (movieEventID, userID, occuSeats) =>
 {
     try
     {
+        let docs1 = await Reservation.findOne(
+            {
+                user            : userID,
+                movieEvent      : movieEventID,
+            });
+            console.log(docs1);
         let docs = await Reservation.findOneAndDelete(
         {
             user            : userID,
-            movieEvent      : movieEventID
+            movieEvent      : movieEventID,
+            occupiedSeats   : occuSeats
         });
 
         if (docs != null)
         {
+            let oldEvent = await MovieEvent.findById(movieEventID);
+
+            let oldSeats = oldEvent.occuSeats;
+            let newSeats = oldSeats.filter(n => !docs.occupiedSeats.includes(n));
+            // for(let i = 0; i< docs.occuSeats.length; i++){
+
+            //     const index = oldSeats.indexOf(occuSeats[i]);
+            //     if (index > -1) {
+            //     array.splice(index, occuSeats[i]);
+            // }
+            // }
+            console.log(occuSeats);
+            await MovieEvent.findByIdAndUpdate(movieEventID, {occuSeats : newSeats});
+
+
             return 0;
         }
         else
@@ -1067,7 +1090,7 @@ const deleteReservation = async (movieEventID, userID) =>
     }
     catch (err)
     {
-
+        console.log(err);
     }
 };
 
