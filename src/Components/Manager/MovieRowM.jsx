@@ -34,7 +34,7 @@ const movies = [
 ];
 
 
-function MovieRow({ category, fetchURL }) {
+function MovieRowM({ category, fetchURL }) {
   // const [movies, setMovies] = useState([]);
 
   // useEffect(() => {
@@ -52,7 +52,7 @@ function MovieRow({ category, fetchURL }) {
        <div className="row__poster">
         {movies.map((movie) => (
           <NavLink
-          to={"/step2"}
+          to={"/eventList"}
           state={{ movie: movie}}
           className="row__poster"
         >
@@ -67,4 +67,4 @@ function MovieRow({ category, fetchURL }) {
   );
 }
 
-export default MovieRow;
+export default MovieRowM;

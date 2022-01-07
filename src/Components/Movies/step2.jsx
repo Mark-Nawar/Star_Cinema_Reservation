@@ -60,7 +60,6 @@ const moviesEvents = [
 ];
 const StepTwo = () => {
   const location = useLocation();
-  console.log(location);
   const movie = location.state?.movie;
   // const [movieEvents, setMovieEvents] = useState([]);
 

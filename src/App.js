@@ -8,6 +8,17 @@ import { StepOne } from './Components/Movies/step1';
 import StepTwo from './Components/Movies/step2';
 import StepThree from './Components/Movies/step3';
 import PastReservations from './Components/Movies/PastReservations';
+import DashBoard from './Components/Manager/DashBoard';
+import ShowMovies from './Components/Manager/ShowMovies';
+import MoviesEvents from './Components/Manager/MoviesEvents';
+import EditMovie from './Components/Manager/EditMovie';
+import AddMovie from './Components/Manager/AddMovie';
+import EventList from './Components/Manager/EventList';
+import AddEvent from './Components/Manager/AddEvent';
+import EditEvent from './Components/Manager/EditEvent';
+
+
+
 
 
 function App() {
@@ -22,6 +33,15 @@ function App() {
            <Route path="/step2" element={<StepTwo/>}/>  
            <Route path="/step3" element={<StepThree/>}/> 
            <Route path="/pastReservations" element={<PastReservations/>}/> 
+           <Route path="/dashBoard" element={<DashBoard/>}/>
+           <Route  path="/managerMovies" element={<ShowMovies/>}/>
+           <Route  path="/mangerMovieEvents" element={<MoviesEvents/>}/>
+           <Route path="/EditMovie" element={<EditMovie/>}/>
+           <Route path="/addMovie" element={<AddMovie/>}/>
+           <Route path="/eventList" element={<EventList/>}/>
+           <Route path="/AddEvent" element={<AddEvent/>}/>
+           <Route path="editEvent" element={<EditEvent/>}/>
+
 
         </Routes>
       </Router>

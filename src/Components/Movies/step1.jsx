@@ -2,7 +2,6 @@ import React from 'react'
 import Banner from './Banner'
 import MovieRow from './MovieRow'
 import NavMovies from './NavMovies'
-import StepThree from './step3'
 
 
 
