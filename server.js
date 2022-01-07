@@ -930,7 +930,7 @@ app.get("/viewReser", async (req,res) =>
     }
 });
 
-app.get("/reserve/", async (req,res) =>
+app.post("/reserve/", async (req,res) =>
 {
     let jtoken          = req.headers["x-access-token"];
     let movieEventID    = req.body.movieEventID;
@@ -950,6 +950,7 @@ app.get("/reserve/", async (req,res) =>
                 return;
             }
 
+            console.log(occuSeats);
             let resrv = await addReservation(movieEventID,userID._id,occuSeats );
 
             if (resrv == 0)
@@ -984,8 +985,8 @@ const addReservation = async (movieEventID, userID, occuSeats) =>
         occupiedSeats   : occuSeats
     });
 
-    let found = Reservation.find({
-        user            : userID,
+    let found = await Reservation.find(
+    {
         movieEvent      : movieEventID
     });
 
@@ -1004,18 +1005,34 @@ const addReservation = async (movieEventID, userID, occuSeats) =>
             });
         });
 
-        if ( clash)
+        if (clash)    
             return -1;
-        return 0;
     }
     try
     {
-        newRes.save();
+        await newRes.save();
+        
+        let movieEventSeats = await MovieEvent.findById(movieEventID);
+
+        let seats = movieEventSeats.occuSeats;
+
+        console.log("Seats",seats);
+        
+        let updatedSeats = [...seats,...occuSeats];
+        
+        console.log(updatedSeats);
+        
+        await MovieEvent.findByIdAndUpdate(movieEventID,
+        {
+            occuSeats : updatedSeats
+        });
+
         return 0;
     }
     catch (err)
     {
         console.log(err);
+        return -1;
     }
 };
 
