@@ -202,6 +202,9 @@ app.get("/addUser", async(req,res)=>
 
 });
 
+
+
+
 const addUser = async ( userName, email, password, fName, lName, role) =>
 {
     const user = new User
@@ -276,11 +279,12 @@ const searchUserReser = async (username) =>
             return null;
         }
 
+        return await searchMovieEventByUserID(user._id);
 
     }
     catch(err)
     {
-
+        console.log(err);
     }
 };
 //=====================================================================================
@@ -550,6 +554,20 @@ const checkIfCanAddEvent = async (date,startTime,endTime,screeningRoom)=>
 
 };
 
+
+const searchMovieEventByUserID = async (userID) =>
+{
+    //Returns an array of movie events that are associated with this userID
+    try
+    {
+        return await Reservation.find({user : userID});
+    }
+    catch(err)
+    {
+        console.log(err);
+        return null;
+    }
+};
 //=====================================================================================
 
 
@@ -692,7 +710,133 @@ const addMovie = async(title, poster, category ) =>
 //==========================================================================
 
 
+//====================================="Reservation" Collection==============================
 
+app.get("/viewReser", async (req,res) =>
+{
+    let jtoken = req.headers["x-access-token"];
+
+    if(jtoken != null)
+    {
+        try
+        {
+            let decodedToken = await jwt.verify(jtoken, secretStr);
+
+            let username1   = decodedToken.username;
+            let userID      = await searchUserUsername(username1);
+            if (userID == null)
+            {
+                res.send("Wrong token");
+                return;
+            }
+
+            let resrv = await searchUserReser(username1);
+
+            res.send(resrv);
+           
+
+        }
+        catch(err)
+        {
+            res.send("Unverified token");
+            console.log(err);
+        }
+    }
+    else
+    {
+        res.redirect("/signin");
+    }
+});
+
+app.get("/reserve/:movieEventID", async (req,res) =>
+{
+    let jtoken          = req.headers["x-access-token"];
+    let movieEventID    = req.params.movieEventID;
+    let occuSeats       = req.body.occuSeats;
+
+    if(jtoken != null)
+    {
+        try
+        {
+            let decodedToken = await jwt.verify(jtoken, secretStr);
+
+            let username1   = decodedToken.username;
+            let userID      = await searchUserUsername(username1);
+            if (userID == null)
+            {
+                res.send("Wrong token");
+                return;
+            }
+
+            let resrv = await addReservation(movieEventID,userID._id,occuSeats );
+
+            if (resrv == 0)
+            {
+                res.send("Reserved successfully");
+            }
+            else
+            {
+                res.send("CANNOT reserve");
+            }
+           
+
+        }
+        catch(err)
+        {
+            res.send("Unverified token");
+            console.log(err);
+        }
+    }
+    else
+    {
+        res.redirect("/signin");
+    }    
+});
+
+const addReservation = async (movieEventID, userID, occuSeats) =>
+{
+    const newRes = new Reservation 
+    ({
+        user            : userID,
+        movieEvent      : movieEventID,
+        occupiedSeats   : occuSeats
+    });
+
+    let found = Reservation.find({
+        user            : userID,
+        movieEvent      : movieEventID
+    });
+
+    let clash = false;
+    if (found != null)
+    {
+        found.forEach(reservation => 
+        {
+            reservation.occupiedSeats.forEach(occu => 
+            {
+                occuSeats.forEach(currentSeat =>
+                    {
+                        if (currentSeat == occu)
+                            clash = true;
+                    });
+            });
+        });
+
+        if ( clash)
+            return -1;
+        return 0;
+    }
+    try
+    {
+        newRes.save();
+        return 0;
+    }
+    catch (err)
+    {
+        console.log(err);
+    }
+};
+//===========================================================================================
 
 
 const createToken = async (username, role)=>
