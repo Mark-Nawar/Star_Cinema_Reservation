@@ -15,6 +15,7 @@ const User  = require("./models/users");
 const Movie = require("./models/movies");
 const MovieEvent = require("./models/movieEvent");
 const Reservation = require("./models/reservations");
+const { find } = require("./models/users");
 
 const secretStr = "C++ Fo2";
 
@@ -295,6 +296,7 @@ const searchUserReser = async (username) =>
 
 //====================================="MovieEvent" Collection==============================
 
+
 app.post("/addMovieEvent", async (req,res)=>
 {
     let movieId         = req.body.id;
@@ -427,6 +429,59 @@ app.post("/movieEvents/:movieEventID", async (req,res)=>
     }
 });
 
+app.post("/deleteMovieEvent",async (req,res) => 
+{
+
+    let jToken = req.headers["x-access-token"];
+    let role = checkToken(jToken,secretStr);
+
+    if (role == -1)             //Unverified
+    {
+        res.send("Unverified");
+        return;
+    }
+    else if (role != 2)         //Not a manager
+    {
+        res.send("Not Manager");
+        return;
+    }
+    else                        //Manager
+    {
+        let movieEventId = req.body.movieEventID;
+    
+        try
+        {
+            let delCountRes = await Reservation.deleteMany(
+                    {
+                        movieEvent : movieEventId
+                    }
+                );   
+            
+            let deleted = await MovieEvent.findByIdAndDelete(movieEventId); 
+            
+            // console.log(delCountRes);
+            // console.log(deleted);
+
+            if (delCountRes.deletedCount == 0 && deleted == null)
+            {
+                res.send("Could not delete Movie Event");
+            }
+            else
+            {
+                res.send("Deleted");
+            }
+        }
+        
+        catch (err)
+        {
+            console.log(err);
+            return;
+        }   
+    }
+
+
+
+});
 
 
 const searchMovieEvent = async(movieId, date, sTime, eTime, screeningRoom) =>
@@ -568,6 +623,21 @@ const searchMovieEventByUserID = async (userID) =>
         return null;
     }
 };
+
+const deleteMovieEvent = async (movieEventID) =>
+{
+    let found = await MovieEvent.findOneAndDelete(movieEventID);
+
+    if (found == null)
+    {
+        return -1;
+    }
+    else
+    {
+        return 0;
+    }
+};
+
 //=====================================================================================
 
 
@@ -740,6 +810,42 @@ const addMovie = async(title, poster, category ) =>
 
 //====================================="Reservation" Collection==============================
 
+app.post("/deleteReservation", async (req,res) =>
+{
+    let jToken          = req.headers["x-access-token"];
+    let role            = checkToken(jToken,secretStr);
+    let movieEventID    = req.body.movieEventID;
+    let user            = req.body.userID;
+
+    if (role == -1)             //Unverified
+    {
+        res.send("Unverified");
+        return;
+    }
+    else if (role != 2)         //Not a manager
+    {
+        res.send("Not Manager");
+        return;
+    }
+    else                        //Manager
+    {
+        let found = await deleteReservation(movieEventID,user);
+        
+        if (found == 0)         //Found
+        {
+            res.send("Reservation Deleted");
+            return;
+        }
+        else                    //Not found
+        {
+            res.send("Reservation not found");
+            return;
+        }
+
+    }
+
+});
+
 app.get("/viewReser", async (req,res) =>
 {
     let jtoken = req.headers["x-access-token"];
@@ -864,8 +970,46 @@ const addReservation = async (movieEventID, userID, occuSeats) =>
         console.log(err);
     }
 };
+
+const searchReservation = async(movieEventID, userID) =>
+{
+    return await Reservation.find(
+    {
+        user            : userID,
+        movieEvent      : movieEventID
+    });
+
+};
+
+const deleteReservation = async (movieEventID, userID) =>
+{
+    try
+    {
+        let docs = await Reservation.findOneAndDelete(
+        {
+            user            : userID,
+            movieEvent      : movieEventID
+        });
+
+        if (docs != null)
+        {
+            return 0;
+        }
+        else
+        {
+            return -1;
+        }
+    }
+    catch (err)
+    {
+
+    }
+};
+
+
 //===========================================================================================
 
+//=====================================منوعات========================================
 
 const createToken = async (username, role)=>
 {
@@ -916,7 +1060,19 @@ const between = (a, b, c) =>
 	return ((a <= b) && (b < c)) || ((c < a) && (a <= b)) || ((b < c) && (c < a));
 }
 
-
+const checkToken = (jToken,secretStr) =>
+{
+    try
+    {
+        let decodedToken = jwt.verify(jToken,secretStr);
+        return decodedToken.role;
+    }
+    catch (err)
+    {
+        console.log(err);
+        return -1;
+    }
+};
 
 
 
