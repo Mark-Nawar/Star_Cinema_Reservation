@@ -150,7 +150,7 @@ app.post("/signup", async (req,res)=>
     }
 });
 
-app.get("/addUser", async(req,res)=>
+app.post("/addUser", async(req,res)=>
 {
     let jtoken  = req.headers["x-access-token"];
 
