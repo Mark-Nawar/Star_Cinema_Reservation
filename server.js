@@ -359,20 +359,20 @@ app.post("/addMovieEvent", async (req,res)=>
     
 });
 
-app.get("/movieEvents/:movieID", async (req,res)=>
+app.get("/movieEvents/", async (req,res)=>
 {
-    let movieID = req.params.movieID;
+    let movieID = req.body.movieID;
 
     //Get all MovieEvent for the id
     res.send(await searchMovieEventByMovieID(movieID) );
 });
 
-app.post("/movieEvents/:movieEventID", async (req,res)=>
+app.post("/movieEvents/", async (req,res)=>
 {
     //Reserve MovieEvent
 
     //================TODO==============TO BE TESTED
-    let movieEventID    = req.params.movieEventID;
+    let movieEventID    = req.body.movieEventID;
     let seats           = req.body.seats;
 
     //get token
@@ -718,11 +718,59 @@ app.post("/addMovie", async (req,res)=>
     
 });
 
-app.get("/movies/:movieCat", async (req,res)=>
+app.get("/movies/", async (req,res)=>
 {
-    let movieCat = req.params.movieCat;
+    let movieCat = req.body.movieCat;
 
     res.send(await searchMovieCat(movieCat));
+});
+
+
+app.post("/editMovie", async(req,res)=>
+{
+    //title, poster and category
+    let movieID        = req.body.movieID;
+    let newPoster      = req.body.poster;
+    let newCategory    = req.body.category;
+
+    try
+    {
+        await Movie.findByIdAndUpdate(movieID, 
+        {
+            poster      : newPoster,
+            category    : newCategory
+        });
+        res.send("Updated");
+    }
+    catch (err)
+    {
+        res.send("Error");
+        console.log(err);
+    }
+
+});
+
+app.get("/deleteMovie", async(req,res)=>
+{
+    let movieID = req.body.movieID;
+
+    try
+    {
+        let docs = await Movie.findByIdAndRemove(movieID);
+        if (docs == null)
+        {
+            res.send("Movie not found");
+            return;
+        }
+        res.send("Deleted");
+        return;
+    }
+    catch(err)
+    {
+        console.log(err);
+        res.send("Error");
+        return;
+    }
 });
 
 const searchMovieID = async(id) =>
@@ -805,7 +853,7 @@ const addMovie = async(title, poster, category ) =>
     }
 };
 
-//==========================================================================
+//===========================================================================================
 
 
 //====================================="Reservation" Collection==============================
@@ -882,10 +930,10 @@ app.get("/viewReser", async (req,res) =>
     }
 });
 
-app.get("/reserve/:movieEventID", async (req,res) =>
+app.get("/reserve/", async (req,res) =>
 {
     let jtoken          = req.headers["x-access-token"];
-    let movieEventID    = req.params.movieEventID;
+    let movieEventID    = req.body.movieEventID;
     let occuSeats       = req.body.occuSeats;
 
     if(jtoken != null)
