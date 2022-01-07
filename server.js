@@ -54,16 +54,6 @@ mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
 
 
 
-// app.get("/searchRes", async (req,res)=>
-// {
-//     let username = req.body.username;
-//     let movieId = req.body.id;
-
-//     res.send(await seachResrv(username, movieId));
-// });
-
-
-
 //====================================="User"==================================================
 app.post("/signin", async (req,res)=>
 {
@@ -157,11 +147,6 @@ app.post("/signup", async (req,res)=>
         //Send token
         res.send(tok);
     }
-});
-
-app.get("/searchUser", async (req,res)=>
-{
-    res.sendFile("./form.html", {root : __dirname});
 });
 
 app.get("/addUser", async(req,res)=>
@@ -315,25 +300,57 @@ app.get("/addMovieEvent", async (req,res)=>
     let screeningRoom   = req.body.screeningRoom;
     let occuSeats       = req.body.occuSeats;
 
-    
-    let done            = await addMovieEvent(movieId,date, startTime, endTime, screeningRoom, occuSeats);
+    let jtoken          = req.headers["x-access-token"];
+    if (jtoken != null)
+    {
+        try
+        {
+            let decodedToken = await jwt.verify(jtoken, secretStr);
 
-    if (done == 0)
-    {
-        res.send("Movie event added");
-    }
-    else if (done == -2)
-    {
-        res.send("Movie event exists");
-    }
-    else if (done == -3)
-    {
-        res.send("Movie does NOT exists");
+            
+            let role         = decodedToken.role;
+            if (role != 2)
+            {
+                res.send("Not manager");
+            }
+
+            let done            = await addMovieEvent(movieId,date, startTime, endTime, screeningRoom, occuSeats);
+
+            if (done == 0)
+            {
+                res.send("Movie event added");
+            }
+            else if (done == -1)
+            {
+                res.send("Movie event Overlapping");
+            }
+            else if (done == -2)
+            {
+                res.send("Movie event exists");
+            }
+            else if (done == -3)
+            {
+                res.send("Movie does NOT exists");
+            }
+            else
+            {
+                res.send("Movie event was NOT added");
+            }
+
+        }
+        catch(err)
+        {
+            res.send("Unverified token");
+            console.log(err);
+        }
     }
     else
     {
-        res.send("Movie event was NOT added");
+        res.send("No token");
     }
+
+    
+    
 });
 
 app.get("/movieEvents/:movieID", async (req,res)=>
@@ -471,7 +488,12 @@ const addMovieEvent = async(movieId, date, sTime, eTime, screenRoom, occuSeats) 
         occuSeats        : occuSeats
     });
 
-    
+    let checkAdd = await checkIfCanAddEvent(date, sTime, eTime, screenRoom);
+
+    if( checkAdd == -1)
+    {
+        return -1;
+    }
 
     try
     {
@@ -496,6 +518,36 @@ const searchMovieEventByMovieID = async (movieID) =>
         console.log(err);
         return null;
     }
+};
+
+
+const checkIfCanAddEvent = async (date,startTime,endTime,screeningRoom)=>
+{
+    
+    let movies = await MovieEvent.find( {date : date, screeningRoom : screeningRoom});
+
+    let overlap = false;
+    movies.forEach(element => 
+    {
+        // console.log("movie sTime : ", element.startTime, "MOvie eTime : ", element.endTime);
+        // console.log("sTime : ", startTime, "eTime : ", endTime);
+        if ( (between(startTime,element.startTime,endTime) 
+            || between(startTime,element.endTime,endTime) ) 
+            || (between(element.startTime,startTime,element.endTime) 
+            || between(element.startTime,endTime,element.endTime)))
+        {
+            //Overlapping
+            overlap = true;
+        }
+    });
+
+    if (overlap)
+    {
+        return -1;
+    }
+
+    return 0;
+
 };
 
 //=====================================================================================
@@ -641,6 +693,8 @@ const addMovie = async(title, poster, category ) =>
 
 
 
+
+
 const createToken = async (username, role)=>
 {
     var header = 
@@ -672,8 +726,6 @@ const createToken = async (username, role)=>
 
 };
 
-
-
 const base64url =  (source) => 
 {
     encodedSource = CryptoJS.enc.Base64.stringify(source);
@@ -687,7 +739,10 @@ const base64url =  (source) =>
 
 
 
-
+const between = (a, b, c) =>
+{
+	return ((a <= b) && (b < c)) || ((c < a) && (a <= b)) || ((b < c) && (c < a));
+}
 
 
 
