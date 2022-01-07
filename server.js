@@ -4,7 +4,7 @@ const express = require("express");
 //Require JSON Web Token
 const jwt = require("jsonwebtoken");
 
-jwt.verify
+//jwt.verify
 const CryptoJS = require("crypto-js");
 
 //Require mogoose for mongoDB
@@ -61,6 +61,248 @@ mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true })
 
 //     res.send(await seachResrv(username, movieId));
 // });
+
+
+
+//====================================="User"==================================================
+app.post("/signin", async (req,res)=>
+{
+    let jtoken      = req.headers["x-access-token"];
+
+    let userName;
+    let password;
+
+    if(jtoken != null)
+    {
+        try
+        {
+            let decodedToken = await jwt.verify(jtoken, secretStr);
+
+            let username1   = decodedToken.username;
+            let userID      = await searchUserUsername(username1);
+            if (userID == null)
+            {
+                res.send("Wrong token");
+                return;
+            }
+
+
+            userName = userID.username;
+            password = userID.password;
+
+            res.send("User already signed in");
+
+        }
+        catch(err)
+        {
+            res.send("Unverified token");
+            console.log(err);
+        }
+    }
+    else
+    {
+        userName = req.body.username;
+        password = req.body.password;
+    }
+
+   
+
+    try
+    {
+        let result = await User.findOne({ username : userName, password : password});
+        if (result != null)
+        {
+            //Create token and send it
+            let tok =  await createToken(userName, result.role);
+            //console.log(tok);
+
+            //Send token
+            res.send(tok);
+        }
+        else
+        {
+            res.send("Invalid username or password");
+        }
+    }
+    catch(err)
+    {
+        console.log(err);
+    };
+});
+
+app.post("/signup", async (req,res)=>
+{
+    let userName    = req.body.username;
+    let password    = req.body.password;
+    let email       = req.body.email;
+    let fName       = req.body.firstName;
+    let lName       = req.body.lastName;
+    let role        = req.body.role;
+   
+    let found = await searchUser(email, userName);
+    if ( found )
+    {
+        //Cannot add user
+        res.send("CANNOT add user");
+        return;
+    }
+    else
+    {
+        //Add user
+        await addUser(userName, email, password, fName, lName, role);
+
+        let tok =  await createToken(userName, role);
+        //console.log(tok);
+
+        //Send token
+        res.send(tok);
+    }
+});
+
+app.get("/searchUser", async (req,res)=>
+{
+    res.sendFile("./form.html", {root : __dirname});
+});
+
+app.get("/addUser", async(req,res)=>
+{
+    let jtoken  = req.headers["x-access-token"];
+
+    if (jtoken != null)
+    {
+        try
+        {
+            let decodedToken = await jwt.verify(jtoken, secretStr);
+
+            let role = decodedToken.role;
+            if(role != 2)
+            {
+                //Manager role = 2
+                res.send("Not manager");
+            }
+
+            let userName    = req.body.username;
+            let password    = req.body.password;
+            let email       = req.body.email;
+            let fName       = req.body.firstName;
+            let lName       = req.body.lastName;
+            let roleNew     = req.body.role;
+
+            let found = await searchUser(email, userName);
+            if ( found )
+            {
+                //Cannot add user
+                res.send("CANNOT add user");
+                return;
+            }
+            else
+            {
+                //Add user
+                await addUser(userName, email, password, fName, lName, roleNew);
+
+                res.send("User added");
+            }
+
+        }
+        catch(err)
+        {
+            res.send("Unverified token");
+            console.log(err);
+        }
+    }
+    else
+    {
+        res.send("No token");
+    }
+
+});
+
+const addUser = async ( userName, email, password, fName, lName, role) =>
+{
+    const user = new User
+    (
+        {
+            username    : userName,
+            password    : password,
+            email       : email,
+            firstName   : fName,
+            lastName    : lName,
+            role        : role
+
+        }
+    );
+    
+    //add user to the collection
+    try 
+    {    
+        await user.save();
+        //console.log("User with email ",user.email, " was added");
+    }
+    catch(err)
+    {
+        console.log(err);
+    };
+};
+
+const searchUser = async (email, username) =>
+{
+
+    let resultusername;
+    let resultemail;
+    try 
+    {
+        resultemail     =   await User.findOne({email       : email});
+        resultusername  =   await User.findOne({username    : username});
+
+        if (resultemail != null || resultusername != null )
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    catch(err)
+    {
+        console.log(err);
+    };
+};
+
+const searchUserUsername = async (username) =>
+{
+    try 
+    {
+        return await User.findOne({username : username});
+    }
+    catch (err)
+    {
+        console.log(err);
+    }
+};
+
+const searchUserReser = async (username) =>
+{
+    try
+    {
+        let user = await searchUserUsername(username);
+        if (username == null)
+        {
+            return null;
+        }
+
+
+    }
+    catch(err)
+    {
+
+    }
+};
+//=====================================================================================
+
+
+
+
 
 //====================================="MovieEvent" Collection==============================
 
@@ -164,6 +406,8 @@ app.post("/movieEvents/:movieEventID", async (req,res)=>
     }
 });
 
+
+
 const searchMovieEvent = async(movieId, date, sTime, eTime, screeningRoom) =>
 {
     try
@@ -258,147 +502,6 @@ const searchMovieEventByMovieID = async (movieID) =>
 
 
 
-//====================================="User"==================================================
-app.post("/signin", async (req,res)=>
-{
-    let userName = req.body.username;
-    let password = req.body.password;
-
-    try
-    {
-        let result = await User.findOne({ username : userName, password : password});
-        if (result != null)
-        {
-            //Create token and send it
-            let tok =  await createToken(userName);
-            //console.log(tok);
-
-            //Send token
-            res.send(tok);
-        }
-        else
-        {
-            res.send("Invalid username or password");
-        }
-    }
-    catch(err)
-    {
-        console.log(err);
-    };
-});
-
-app.post("/signup", async (req,res)=>
-{
-    let userName    = req.body.username;
-    let password    = req.body.password;
-    let email       = req.body.email;
-    let fName       = req.body.firstName;
-    let lName       = req.body.lastName;
-    let role        = req.body.role;
-   
-    let found = await searchUser(email, userName);
-    if ( found )
-    {
-        //Cannot add user
-        res.send("CANNOT add user");
-        return;
-    }
-    else
-    {
-        //Add user
-        await addUser(userName, email, password, fName, lName, role);
-        res.send("User added");
-    }
-});
-
-app.get("/searchUser", async (req,res)=>
-{
-    res.sendFile("./form.html", {root : __dirname});
-});
-
-const addUser = async ( userName, email, password, fName, lName, role) =>
-{
-    const user = new User
-    (
-        {
-            username    : userName,
-            password    : password,
-            email       : email,
-            firstName   : fName,
-            lastName    : lName,
-            role        : role
-
-        }
-    );
-    
-    //add user to the collection
-    try 
-    {    
-        await user.save();
-        //console.log("User with email ",user.email, " was added");
-    }
-    catch(err)
-    {
-        console.log(err);
-    };
-};
-
-const searchUser = async (email, username) =>
-{
-
-    let resultusername;
-    let resultemail;
-    try 
-    {
-        resultemail     =   await User.findOne({email       : email});
-        resultusername  =   await User.findOne({username    : username});
-
-        if (resultemail != null || resultusername != null )
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    catch(err)
-    {
-        console.log(err);
-    };
-};
-
-const searchUserUsername = async (username) =>
-{
-    try 
-    {
-        return await User.findOne({username : username});
-    }
-    catch (err)
-    {
-        console.log(err);
-    }
-};
-
-const searchUserReser = async (username) =>
-{
-    try
-    {
-        let user = await searchUserUsername(username);
-        if (username == null)
-        {
-            return null;
-        }
-
-
-    }
-    catch(err)
-    {
-
-    }
-};
-//=====================================================================================
-
 
 
 
@@ -447,6 +550,13 @@ app.get("/addMovie", async (req,res)=>
     }
 });
 
+app.get("/movies/:movieCat", async (req,res)=>
+{
+    let movieCat = req.params.movieCat;
+
+    res.send(await searchMovieCat(movieCat));
+});
+
 const searchMovieID = async(id) =>
 {
     let resultId;
@@ -475,8 +585,6 @@ const searchMovieAll = async(title, category) =>
         return null;
     }
 };
-
-
 
 const seachResrveOfMovie = async(username, movieID) =>
 {
@@ -533,7 +641,7 @@ const addMovie = async(title, poster, category ) =>
 
 
 
-const createToken = async (username)=>
+const createToken = async (username, role)=>
 {
     var header = 
     {
@@ -549,7 +657,8 @@ const createToken = async (username)=>
     {
         "username" : username,
         //Exp is the no of seconds from 1-1-1970
-        "exp"       : currentDate
+        "exp"       : currentDate,
+        "role"      : role
     }
     var stringifiedPayload = CryptoJS.enc.Utf8.parse(JSON.stringify(payload));
 
