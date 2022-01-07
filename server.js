@@ -295,7 +295,7 @@ const searchUserReser = async (username) =>
 
 //====================================="MovieEvent" Collection==============================
 
-app.get("/addMovieEvent", async (req,res)=>
+app.post("/addMovieEvent", async (req,res)=>
 {
     let movieId         = req.body.id;
     let date            = req.body.date;
@@ -602,22 +602,50 @@ app.get("/searchMovieCat", async (req,res)=>
     res.send(await searchMovieCat(category));
 });
 
-app.get("/addMovie", async (req,res)=>
+app.post("/addMovie", async (req,res)=>
 {
     let title       = req.body.title;
     let poster      = req.body.poster;
     let category    = req.body.category; 
 
-    let done = await addMovie(title,poster,category);
-
-    if (done)
+    let jtoken          = req.headers["x-access-token"];
+    if (jtoken != null)
     {
-        res.send("Movie added");
+        try
+        {
+            let decodedToken = await jwt.verify(jtoken, secretStr);
+
+            
+            let role         = decodedToken.role;
+            if (role != 2)
+            {
+                res.send("Not manager");
+                return;
+            }
+            
+            let done = await addMovie(title,poster,category);
+
+            if (done)
+            {
+                res.send("Movie added");
+            }
+            else
+            {
+                res.send("Movie was NOT added");
+            }
+        }
+        catch(err)
+        {
+            res.send("Unverified token");
+            console.log(err);
+        }
     }
     else
     {
-        res.send("Movie was NOT added");
+        res.send("No token");
     }
+
+    
 });
 
 app.get("/movies/:movieCat", async (req,res)=>
