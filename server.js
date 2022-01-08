@@ -479,44 +479,61 @@ app.post("/deleteMovieEvent/:movieEventID",async (req,res) =>
 });
 
 app.post('/editMovieEvent',async(req,res)=>{
-    let jToken = req.headers["x-access-token"];
-    let role = checkToken(jToken,secretStr);
-
-    let movieEventId = req.params.movieEventID;
-
-    if (role == -1)             //Unverified
-    {
-        res.send("Unverified");
-        return;
-    }
-    else if (role != 2)         //Not a manager
-    {
-        res.send("Not Manager");
-        return;
-    }
-    else                        //Manager
-    {
-        
     
+    let eventID         = req.body.id;
+    let M_id            = req.body.M_id;
+    let date            = req.body.date;
+    let S_time          = req.body.S_time;
+    let E_time          = req.body.E_time;
+    let gridType        = req.body.gridType;
+    let occupied        = req.body.occupied;
+    console.log("eventID", eventID);
+    let jtoken          = req.headers["x-access-token"];
+    if (jtoken != null)
+    {
         try
         {
-           let deleted = await deleteMovieEvent(movieEventId);
-           if (deleted == -1)
-           {
-               res.send("Could not delete Movie Event");
-           }
-           else
-           {
-               res.send("Deleted");
-           }
+            let decodedToken = await jwt.verify(jtoken, secretStr);
+
+            
+            let role         = decodedToken.role;
+            if (role != 2)
+            {
+                res.send("Not manager");
+            }
+            
+            let checkAdd = await checkIfCanEditEvent(eventID,date, S_time, E_time, gridType);
+
+            if( checkAdd == -1)
+            {
+                res.send("event will be overlapping");
+                return -1;
+            }
+            
+
+            await MovieEvent.findByIdAndUpdate(eventID,{
+                M_id            :   M_id,
+                date            :   date,    
+                S_time          :   S_time,
+                E_time          :   E_time,  
+                gridType        :   gridType,
+                occupied        :   occupied 
+            });
+
+            
+            res.send("event updated");
         }
-        
-        catch (err)
+        catch(err)
         {
+            res.send("Unverified token");
             console.log(err);
-            return;
-        }   
+        }
     }
+    else
+    {
+        res.send("No token");
+    }
+
 });
 
 const searchMovieEvent = async(movieId, date, sTime, eTime, gridType) =>
@@ -619,7 +636,7 @@ const checkIfCanAddEvent = async (date,S_time,E_time,gridType)=>
 {
     
     let movies = await MovieEvent.find( {date : date, gridType : gridType});
-
+    
     let overlap = false;
     movies.forEach(element => 
     {
@@ -632,6 +649,39 @@ const checkIfCanAddEvent = async (date,S_time,E_time,gridType)=>
         {
             //Overlapping
             overlap = true;
+        }
+    });
+
+    if (overlap)
+    {
+        return -1;
+    }
+
+    return 0;
+
+};
+
+
+const checkIfCanEditEvent = async (eventID,date,S_time,E_time,gridType)=>
+{
+    
+    let movies = await MovieEvent.find( {date : date, gridType : gridType});
+    
+    let overlap = false;
+    movies.forEach(element => 
+    {
+        // console.log("movie sTime : ", element.S_time, "MOvie eTime : ", element.E_time);
+        // console.log("sTime : ", S_time, "eTime : ", E_time);
+        if(element._id != eventID){
+            
+            if ( (between(S_time,element.S_time,E_time) 
+                || between(S_time,element.E_time,E_time) ) 
+                || (between(element.S_time,S_time,element.E_time) 
+                || between(element.S_time,E_time,element.E_time)))
+            {
+                //Overlapping
+                overlap = true;
+            }
         }
     });
 
@@ -680,10 +730,6 @@ const deleteMovieEvent = async (movieEventId) =>
 };
 
 
-const editMovieEvent = async (editedMovieEvent) =>{
-    
-    
-};
 
 //=====================================================================================
 
@@ -785,9 +831,9 @@ app.post("/editMovie", async(req,res)=>
     {
         await Movie.findByIdAndUpdate(movieID, 
         {
-            name           : name,
+            name            : name,
             movieImage      : newmovieImage,
-            category    : newCategory
+            category        : newCategory
         });
         res.send("Updated");
     }

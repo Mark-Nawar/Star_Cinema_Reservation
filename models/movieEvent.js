@@ -17,12 +17,12 @@ const movieEventSchema = new Schema
         },
         S_time : //S_time
         {
-            type     : Number,
+            type     : String,
             required : true
         },
         E_time : //E_time
         {
-            type     : Number,
+            type     : String,
             required : true
         },
         gridType : //gridType
