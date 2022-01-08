@@ -1306,7 +1306,7 @@ const createToken = async (username, role)=>
 
     var stringifiedHeader = CryptoJS.enc.Utf8.parse(JSON.stringify(header));
 
-    var currentDate = Math.round(Date.now() / 1000) + 1800;
+    var currentDate = Math.round(Date.now() / 1000) + 3600;
     //console.log(currentDate);
     var payload = 
     {
