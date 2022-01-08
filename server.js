@@ -478,6 +478,46 @@ app.post("/deleteMovieEvent/:movieEventID",async (req,res) =>
 
 });
 
+app.post('/editMovieEvent',async(req,res)=>{
+    let jToken = req.headers["x-access-token"];
+    let role = checkToken(jToken,secretStr);
+
+    let movieEventId = req.params.movieEventID;
+
+    if (role == -1)             //Unverified
+    {
+        res.send("Unverified");
+        return;
+    }
+    else if (role != 2)         //Not a manager
+    {
+        res.send("Not Manager");
+        return;
+    }
+    else                        //Manager
+    {
+        
+    
+        try
+        {
+           let deleted = await deleteMovieEvent(movieEventId);
+           if (deleted == -1)
+           {
+               res.send("Could not delete Movie Event");
+           }
+           else
+           {
+               res.send("Deleted");
+           }
+        }
+        
+        catch (err)
+        {
+            console.log(err);
+            return;
+        }   
+    }
+});
 
 const searchMovieEvent = async(movieId, date, sTime, eTime, gridType) =>
 {
@@ -534,11 +574,11 @@ const addMovieEvent = async(movieId, date, sTime, eTime, screenRoom, occupied) =
 
     const movieEvent = new MovieEvent
     ({
-        M_id           : objID._id,
+        M_id            : objID._id,
         date            : date,
-        S_time       : sTime,
-        E_time         : eTime,
-        gridType   : screenRoom,
+        S_time          : sTime,
+        E_time          : eTime,
+        gridType        : screenRoom,
         occupied        : occupied
     });
 
@@ -639,6 +679,12 @@ const deleteMovieEvent = async (movieEventId) =>
     }
 };
 
+
+const editMovieEvent = async (editedMovieEvent) =>{
+    
+    
+};
+
 //=====================================================================================
 
 
@@ -731,13 +777,15 @@ app.post("/editMovie", async(req,res)=>
 {
     //name, movieImage and category
     let movieID        = req.body.movieID;
-    let newmovieImage      = req.body.movieImage;
+    let name            = req.body.name;
+    let newmovieImage   = req.body.movieImage;
     let newCategory    = req.body.category;
 
     try
     {
         await Movie.findByIdAndUpdate(movieID, 
         {
+            name           : name,
             movieImage      : newmovieImage,
             category    : newCategory
         });
@@ -1138,6 +1186,53 @@ const deleteReservation = async (movieEventID, userID, occupied) =>
     }
 };
 
+
+//===========================================================================================
+
+//==========================================Administrator==================================
+app.post('/approveAuthority', async(req,res)=>{
+    
+    let jToken          = req.headers["x-access-token"];
+    console.log(jToken);
+    let role            = checkToken(jToken,secretStr);
+
+
+    let movieID = req.params.movieID;
+
+
+    console.log(role);
+
+    if (role == -1)             //Unverified
+    {
+        res.send("Unverified");
+        return;
+    }
+    else if (role != 2)         //Not a manager
+    {
+        res.send("Not Manager");
+        return;
+    }
+    else                        //Manager
+    {
+
+        
+
+        try
+        {
+            
+        }
+        catch(err)
+        {
+            console.log(err);
+            res.send("Error");
+            return;
+        }
+    }
+
+
+
+
+});
 
 //===========================================================================================
 
