@@ -826,23 +826,35 @@ app.post("/editMovie", async(req,res)=>
     let name            = req.body.name;
     let newmovieImage   = req.body.movieImage;
     let newCategory    = req.body.category;
-
-    try
+    let jtoken          = req.headers["x-access-token"];
+    if (jtoken != null)
     {
-        await Movie.findByIdAndUpdate(movieID, 
+
+            
+        try
         {
-            name            : name,
-            movieImage      : newmovieImage,
-            category        : newCategory
-        });
-        res.send("Updated");
-    }
-    catch (err)
-    {
-        res.send("Error");
-        console.log(err);
-    }
+            let decodedToken = await jwt.verify(jtoken, secretStr);
 
+                
+            let role         = decodedToken.role;
+            if (role != 2)
+            {
+                res.send("Not manager");
+            }
+            await Movie.findByIdAndUpdate(movieID, 
+            {
+                name            : name,
+                movieImage      : newmovieImage,
+                category        : newCategory
+            });
+            res.send("Updated");
+        }
+        catch (err)
+        {
+            res.send("Error");
+            console.log(err);
+        }
+    }
 });
 
 app.post("/deleteMovie/:movieID", async(req,res)=>
