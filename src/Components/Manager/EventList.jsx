@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect ,useState } from "react";
 import { useLocation, NavLink } from "react-router-dom";
 import Banner from "../Movies/Banner";
 import "../Movies/step2.css";
@@ -12,72 +12,80 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import NavMovies from "../Movies/NavMovies";
 import { Button } from "react-bootstrap";
+import axios from "axios"
 
-const moviesEvents = [
-  {
-    id: 1,
-    M_name: "Avenger",
-    date: "01-02-2022",
-    S_time: "22:13:00",
-    E_time: "24:13:00",
-    duration: 2,
-    gridType: 1,
-    occupied: [0, 4, 8, 19, 14, 9],
-  },
-  {
-    id: 2,
-    M_name: "Joker",
-    date: "08-03-2020",
-    S_time: "22:13:00",
-    E_time: "24:13:00",
-    duration: 2,
-    gridType: 2,
-    occupied: [0, 25, 12, 11, 9, 8],
-  },
-  {
-    id: 3,
-    M_name: "Toy story",
-    date: "03-14-2022",
-    S_time: "22:13:00",
-    E_time: "24:13:00",
-    duration: 2,
-    gridType: 2,
-    occupied: [0, 25, 12, 11, 9, 8],
-  },
-  {
-    id: 4,
-    M_name: "the lion king",
-    date: "03-21-2020",
-    S_time: "22:13:00",
-    E_time: "24:13:00",
-    duration: 2,
-    gridType: 1,
-    occupied: [1, 4, 10, 19, 14, 9],
-  },
-  {
-    id: 5,
-    M_name: "Avenger",
-    date: "01-02-2022",
-    S_time: "20:13:00",
-    E_time: "23:13:00",
-    duration: 3,
-    gridType: 2,
-    occupied: [0, 4, 8, 19, 14, 9],
-  },
-];
+// const moviesEvents = [
+//   {
+//     id: 1,
+//     M_name: "Avenger",
+//     date: "01-02-2022",
+//     S_time: "22:13:00",
+//     E_time: "24:13:00",
+//     duration: 2,
+//     gridType: 1,
+//     occupied: [0, 4, 8, 19, 14, 9],
+//   },
+//   {
+//     id: 2,
+//     M_name: "Joker",
+//     date: "08-03-2020",
+//     S_time: "22:13:00",
+//     E_time: "24:13:00",
+//     duration: 2,
+//     gridType: 2,
+//     occupied: [0, 25, 12, 11, 9, 8],
+//   },
+//   {
+//     id: 3,
+//     M_name: "Toy story",
+//     date: "03-14-2022",
+//     S_time: "22:13:00",
+//     E_time: "24:13:00",
+//     duration: 2,
+//     gridType: 2,
+//     occupied: [0, 25, 12, 11, 9, 8],
+//   },
+//   {
+//     id: 4,
+//     M_name: "the lion king",
+//     date: "03-21-2020",
+//     S_time: "22:13:00",
+//     E_time: "24:13:00",
+//     duration: 2,
+//     gridType: 1,
+//     occupied: [1, 4, 10, 19, 14, 9],
+//   },
+//   {
+//     id: 5,
+//     M_name: "Avenger",
+//     date: "01-02-2022",
+//     S_time: "20:13:00",
+//     E_time: "23:13:00",
+//     duration: 3,
+//     gridType: 2,
+//     occupied: [0, 4, 8, 19, 14, 9],
+//   },
+// ];
 const EventList = () => {
   const location = useLocation();
   const movie = location.state?.movie;
   // const [movieEvents, setMovieEvents] = useState([]);
- //  const [delete , setDelete] = useState(false);
-  // useEffect(() => {
-  //   async function fetchData() {
-  //     const request = await axios.get(fetchURLofTheMovieName or Id);
-  //     setMovieEvents(request.data.results);
-  //     return request;
-  //   }
-  //   fetchData();
-  // }, [delete]);
+  const [moviesEvents, setMovieEvents] = useState([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      axios
+        .get(`http://localhost:5000/movieEvents/${movie._id}`)
+        .then((res) => {
+          console.log(res.data);
+          setMovieEvents(res.data);
+        })
+        .catch((err) => {
+          alert("no data fetched");
+        });
+    }
+    fetchData();
+  }, [movie]);
   const bannerText = "Pick An Event OR Add a New One";
   const handleDeletion = (eventid) => {
     console.log(eventid);

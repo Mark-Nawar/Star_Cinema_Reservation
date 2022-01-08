@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import Banner from "../Movies/Banner";
 import NavMovies from "../Movies/NavMovies";
 import { Form, Button } from "react-bootstrap";
+import axios from "axios";
 
 function EditMovie() {
   const location = useLocation();
@@ -15,13 +16,27 @@ function EditMovie() {
   async function handleSubmit(e) {
     e.preventDefault();
     const edited = {
-      id: movie.id,
+      movieID: movie._id,
       name: (Name.current.value) ? Name.current.value: movie.name ,
-      duration: (Duration.current.value) ? Duration.current.value : movie.duration ,
+      //duration: (Duration.current.value) ? Duration.current.value : movie.duration ,
       movieImage: (Image.current.value) ? Image.current.value : movie.movieImage,
       category: Category.current.value,
     };
     console.log(edited);
+    const headers = {
+      'x-access-token': localStorage.getItem('token')
+    }
+    axios
+      .post("http://localhost:5000/editMovie", edited ,{
+        headers: headers
+      })
+      .then((res) => {
+        console.log(res.data);
+        alert(res.data);
+      })
+      .catch((err) => {
+        alert("edit Failed failed");
+      });
     //axios.post(editmovieURL/id , edited);
   }
 

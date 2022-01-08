@@ -3,11 +3,13 @@ import { useLocation } from "react-router-dom";
 import Banner from "../Movies/Banner";
 import NavMovies from "../Movies/NavMovies";
 import { Form, Button } from "react-bootstrap";
+import axios from "axios";
 
 function EditEvent() {
   const location = useLocation();
   const movie = location.state?.movie;
   const movieE = location.state?.movieE;
+  console.log(movieE);
   const MDate = useRef();
   const S_time = useRef();
   const E_time = useRef();
@@ -32,15 +34,30 @@ function EditEvent() {
     }
 
     const newME = {
-      M_name: movie.name,
+      id: movieE.id,
+      M_id: movie._id,
       date: MDate.current.value,
       S_time: S_time.current.value,
       E_time: E_time.current.value,
-      duration: diff,
+      //duration: diff,
       gridType: gridType.current.value,
       occupied: movieE.occupied,
     };
     console.log(newME);
+    const headers = {
+        'x-access-token': localStorage.getItem('token')
+      }
+      axios
+        .post("http://localhost:5000/editMovie", newME ,{
+          headers: headers
+        })
+        .then((res) => {
+          console.log(res.data);
+          alert(res.data);
+        })
+        .catch((err) => {
+          alert("edit Failed failed");
+        });
     //axios.post(editUrl , newME );
   }
 

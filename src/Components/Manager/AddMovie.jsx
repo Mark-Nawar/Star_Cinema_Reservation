@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import Banner from "../Movies/Banner";
 import NavMovies from "../Movies/NavMovies";
 import { Form, Button } from "react-bootstrap";
+import axios from "axios";
 
 function AddMovie() {
   const Name = useRef();
@@ -14,12 +15,26 @@ function AddMovie() {
     e.preventDefault();
     const newM = {
       name: Name.current.value,
-      duration: Duration.current.value,
+      //duration: Duration.current.value,
       movieImage: Image.current.value,
       category: Category.current.value,
     };
     // id is auto incremented
     console.log(newM);
+    const headers = {
+      'x-access-token': localStorage.getItem('token')
+    }
+    axios
+      .post("http://localhost:5000/addMovie", newM ,{
+        headers: headers
+      })
+      .then((res) => {
+        console.log(res.data);
+        alert(res.data);
+      })
+      .catch((err) => {
+        alert("insertion failed");
+      });
     //axios.post(insertUrl , newM );
   }
 

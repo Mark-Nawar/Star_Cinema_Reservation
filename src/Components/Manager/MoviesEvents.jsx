@@ -8,10 +8,10 @@ function MoviesEvents() {
     const imageUrl ="https://images2.alphacoders.com/450/thumb-1920-450291.jpg";
     const categories =[ "Action" , "Drama", "Fiction" ,"Comedy"]
     const fetchURLS = [
-        "apiurlAction.com",
-        "apiurlDrama.com",
-        "apiurlFiction.com",
-        "apiurlComedy.com "
+        "http://localhost:5000/movies/Action",
+        "http://localhost:5000/movies/Drama",
+        "http://localhost:5000/movies/Fiction",
+        "http://localhost:5000/movies/Comedy"
     ]
     return (
         <div>
