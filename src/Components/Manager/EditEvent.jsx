@@ -9,7 +9,6 @@ function EditEvent() {
   const location = useLocation();
   const movie = location.state?.movie;
   const movieE = location.state?.movieE;
-  console.log(movieE);
   const MDate = useRef();
   const S_time = useRef();
   const E_time = useRef();
@@ -34,7 +33,7 @@ function EditEvent() {
     }
 
     const newME = {
-      id: movieE.id,
+      id: movieE._id,
       M_id: movie._id,
       date: MDate.current.value,
       S_time: S_time.current.value,
@@ -48,7 +47,7 @@ function EditEvent() {
         'x-access-token': localStorage.getItem('token')
       }
       axios
-        .post("http://localhost:5000/editMovie", newME ,{
+        .post("http://localhost:5000/editMovieEvent", newME ,{
           headers: headers
         })
         .then((res) => {
