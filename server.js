@@ -112,7 +112,8 @@ app.post("/signin", async (req,res)=>
             //console.log(tok);
 
             //Send token
-            res.send(tok);
+
+            res.json({token:tok,role:result.role});
         }
         else
         {
