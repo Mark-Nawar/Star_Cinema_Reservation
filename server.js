@@ -305,10 +305,10 @@ app.post("/addMovieEvent", async (req,res)=>
 {
     let movieId         = req.body.id;
     let date            = req.body.date;
-    let startTime       = req.body.startTime;
-    let endTime         = req.body.endTime;
-    let screeningRoom   = req.body.screeningRoom;
-    let occuSeats       = req.body.occuSeats;
+    let S_time          = req.body.S_time;
+    let E_time          = req.body.E_time;
+    let gridType        = req.body.gridType;
+    let occupied        = req.body.occupied;
 
     let jtoken          = req.headers["x-access-token"];
     if (jtoken != null)
@@ -324,7 +324,7 @@ app.post("/addMovieEvent", async (req,res)=>
                 res.send("Not manager");
             }
 
-            let done            = await addMovieEvent(movieId,date, startTime, endTime, screeningRoom, occuSeats);
+            let done            = await addMovieEvent(movieId,date, S_time, E_time, gridType, occupied);
 
             if (done == 0)
             {
@@ -407,7 +407,7 @@ app.post("/movieEvents/", async (req,res)=>
         ({
             user            : userID._id,
             movieEvent      : movieEventID,
-            occupiedSeats   : seats
+            occupied        : seats
 
         });
 
@@ -415,10 +415,10 @@ app.post("/movieEvents/", async (req,res)=>
         await resv.save();
 
         //Add occupied seats to the movieEvent
-        let newOccu = seats.concat(movieEvent.occuSeats)
+        let newOccu = seats.concat(movieEvent.occupied)
         //newOccu += seats;
         
-        await MovieEvent.findByIdAndUpdate(movieEventID, {occuSeats : newOccu});
+        await MovieEvent.findByIdAndUpdate(movieEventID, {occupied : newOccu});
 
         res.send("Reserved");
        
@@ -478,17 +478,17 @@ app.post("/deleteMovieEvent/:movieEventID",async (req,res) =>
 });
 
 
-const searchMovieEvent = async(movieId, date, sTime, eTime, screeningRoom) =>
+const searchMovieEvent = async(movieId, date, sTime, eTime, gridType) =>
 {
     try
     {
         let result = await MovieEvent.findOne
         ({
-            movie           : movieId, 
+            M_id           : movieId, 
             date            : date,  
-            startTime       : sTime, 
-            endTime         : eTime,
-            screeningRoom   : screeningRoom
+            S_time       : sTime, 
+            E_time         : eTime,
+            gridType   : gridType
         });
         return result;
     }
@@ -513,7 +513,7 @@ const searchMovieEventByID = async(eventID) =>
 };
 
 
-const addMovieEvent = async(movieId, date, sTime, eTime, screenRoom, occuSeats) =>
+const addMovieEvent = async(movieId, date, sTime, eTime, screenRoom, occupied) =>
 {
     //get _id for the movie
     let objID           = await searchMovieID(movieId);///========================================================
@@ -523,7 +523,7 @@ const addMovieEvent = async(movieId, date, sTime, eTime, screenRoom, occuSeats) 
     }
 
     //If event exists, return false
-    let result = await searchMovieEvent(objID._id,date,sTime,eTime,screenRoom,occuSeats);
+    let result = await searchMovieEvent(objID._id,date,sTime,eTime,screenRoom,occupied);
     if (result != null)
     {
         return -2;  //event exists
@@ -533,12 +533,12 @@ const addMovieEvent = async(movieId, date, sTime, eTime, screenRoom, occuSeats) 
 
     const movieEvent = new MovieEvent
     ({
-        movie           : objID._id,
+        M_id           : objID._id,
         date            : date,
-        startTime       : sTime,
-        endTime         : eTime,
-        screeningRoom   : screenRoom,
-        occuSeats        : occuSeats
+        S_time       : sTime,
+        E_time         : eTime,
+        gridType   : screenRoom,
+        occupied        : occupied
     });
 
     let checkAdd = await checkIfCanAddEvent(date, sTime, eTime, screenRoom);
@@ -564,7 +564,7 @@ const searchMovieEventByMovieID = async (movieID) =>
 {
     try
     {
-        return await MovieEvent.find({movie : movieID});
+        return await MovieEvent.find({M_id : movieID});
     }
     catch(err)
     {
@@ -574,20 +574,20 @@ const searchMovieEventByMovieID = async (movieID) =>
 };
 
 
-const checkIfCanAddEvent = async (date,startTime,endTime,screeningRoom)=>
+const checkIfCanAddEvent = async (date,S_time,E_time,gridType)=>
 {
     
-    let movies = await MovieEvent.find( {date : date, screeningRoom : screeningRoom});
+    let movies = await MovieEvent.find( {date : date, gridType : gridType});
 
     let overlap = false;
     movies.forEach(element => 
     {
-        // console.log("movie sTime : ", element.startTime, "MOvie eTime : ", element.endTime);
-        // console.log("sTime : ", startTime, "eTime : ", endTime);
-        if ( (between(startTime,element.startTime,endTime) 
-            || between(startTime,element.endTime,endTime) ) 
-            || (between(element.startTime,startTime,element.endTime) 
-            || between(element.startTime,endTime,element.endTime)))
+        // console.log("movie sTime : ", element.S_time, "MOvie eTime : ", element.E_time);
+        // console.log("sTime : ", S_time, "eTime : ", E_time);
+        if ( (between(S_time,element.S_time,E_time) 
+            || between(S_time,element.E_time,E_time) ) 
+            || (between(element.S_time,S_time,element.E_time) 
+            || between(element.S_time,E_time,element.E_time)))
         {
             //Overlapping
             overlap = true;
@@ -658,11 +658,11 @@ app.get("/searchMovie", async (req,res)=>
 
 app.get("/searchMovieAll", async (req,res)=>
 {
-    let title       = req.body.title;
+    let name       = req.body.name;
     let category    = req.body.category;
 
     //retruns null if movie not found
-    res.send( await searchMovieAll(title,category));
+    res.send( await searchMovieAll(name,category));
 });
 
 app.get("/searchMovieCat", async (req,res)=>
@@ -674,8 +674,8 @@ app.get("/searchMovieCat", async (req,res)=>
 
 app.post("/addMovie", async (req,res)=>
 {
-    let title       = req.body.title;
-    let poster      = req.body.poster;
+    let name       = req.body.name;
+    let movieImage      = req.body.movieImage;
     let category    = req.body.category; 
 
     let jtoken          = req.headers["x-access-token"];
@@ -693,7 +693,7 @@ app.post("/addMovie", async (req,res)=>
                 return;
             }
             
-            let done = await addMovie(title,poster,category);
+            let done = await addMovie(name,movieImage,category);
 
             if (done)
             {
@@ -728,16 +728,16 @@ app.get("/movies/:movieCat", async (req,res)=>
 
 app.post("/editMovie", async(req,res)=>
 {
-    //title, poster and category
+    //name, movieImage and category
     let movieID        = req.body.movieID;
-    let newPoster      = req.body.poster;
+    let newmovieImage      = req.body.movieImage;
     let newCategory    = req.body.category;
 
     try
     {
         await Movie.findByIdAndUpdate(movieID, 
         {
-            poster      : newPoster,
+            movieImage      : newmovieImage,
             category    : newCategory
         });
         res.send("Updated");
@@ -790,7 +790,7 @@ app.post("/deleteMovie/:movieID", async(req,res)=>
                 
                 let movieEventsOfMovieId = await MovieEvent.find(
                     {
-                        movie : movieID
+                        M_id : movieID //change schema name 1
                     }
                     );
                     
@@ -830,11 +830,11 @@ const searchMovieID = async(id) =>
     }
 };
 
-const searchMovieAll = async(title, category) =>
+const searchMovieAll = async(name, category) =>
 {
     try
     {
-        return await Movie.findOne({title : title, category : category});
+        return await Movie.findOne({name : name, category : category});
     }
     catch (err)
     {
@@ -868,17 +868,17 @@ const searchMovieCat = async(category) =>
     }
 };
 
-const addMovie = async(title, poster, category ) =>
+const addMovie = async(name, movieImage, category ) =>
 {
-    if ( await searchMovieAll(title, category) != null)
+    if ( await searchMovieAll(name, category) != null)
     {
         return false;
     }
 
     const movie = new Movie
     ({
-        title       : title,
-        poster      : poster,
+        name       : name,
+        movieImage      : movieImage,
         category    : category
     });
 
@@ -905,7 +905,7 @@ app.post("/deleteReservation", async (req,res) =>
     let role            = checkToken(jToken,secretStr);
     let movieEventID    = req.body.movieEventID;
     let user            = req.body.userID;
-    let occuSeats       = req.body.occuSeats;
+    let occupied       = req.body.occupied;
 
     if (role == -1)             //Unverified
     {
@@ -919,7 +919,7 @@ app.post("/deleteReservation", async (req,res) =>
     // }
     else                        //Manager
     {
-        let found = await deleteReservation(movieEventID,user,occuSeats);
+        let found = await deleteReservation(movieEventID,user,occupied);
         
         if (found == 0)         //Found
         {
@@ -976,7 +976,7 @@ app.post("/reserve/", async (req,res) =>
 {
     let jtoken          = req.headers["x-access-token"];
     let movieEventID    = req.body.movieEventID;
-    let occuSeats       = req.body.occuSeats;
+    let occupied       = req.body.occupied;
 
     if(jtoken != null)
     {
@@ -992,8 +992,8 @@ app.post("/reserve/", async (req,res) =>
                 return;
             }
 
-            console.log(occuSeats);
-            let resrv = await addReservation(movieEventID,userID._id,occuSeats );
+            console.log(occupied, movieEventID);
+            let resrv = await addReservation(movieEventID,userID._id,occupied );
 
             if (resrv == 0)
             {
@@ -1018,13 +1018,14 @@ app.post("/reserve/", async (req,res) =>
     }    
 });
 
-const addReservation = async (movieEventID, userID, occuSeats) =>
+const addReservation = async (movieEventID, userID, occupied) =>
 {
+    console.log("accupied",occupied);
     const newRes = new Reservation 
     ({
         user            : userID,
         movieEvent      : movieEventID,
-        occupiedSeats   : occuSeats
+        occupied        : occupied
     });
 
     let found = await Reservation.find(
@@ -1037,9 +1038,9 @@ const addReservation = async (movieEventID, userID, occuSeats) =>
     {
         found.forEach(reservation => 
         {
-            reservation.occupiedSeats.forEach(occu => 
+            reservation.occupied.forEach(occu => 
             {
-                occuSeats.forEach(currentSeat =>
+                occupied.forEach(currentSeat =>
                     {
                         if (currentSeat == occu)
                             clash = true;
@@ -1052,21 +1053,22 @@ const addReservation = async (movieEventID, userID, occuSeats) =>
     }
     try
     {
+        console.log(newRes);
         await newRes.save();
         
         let movieEventSeats = await MovieEvent.findById(movieEventID);
-
-        let seats = movieEventSeats.occuSeats;
+        console.log(movieEventSeats);
+        let seats = movieEventSeats.occupied;
 
         console.log("Seats",seats);
         
-        let updatedSeats = [...seats,...occuSeats];
+        let updatedSeats = [...seats,...occupied];
         
         console.log(updatedSeats);
         
         await MovieEvent.findByIdAndUpdate(movieEventID,
         {
-            occuSeats : updatedSeats
+            occupied : updatedSeats //change schema name 2
         });
 
         return 0;
@@ -1088,7 +1090,7 @@ const searchReservation = async(movieEventID, userID) =>
 
 };
 
-const deleteReservation = async (movieEventID, userID, occuSeats) =>
+const deleteReservation = async (movieEventID, userID, occupied) =>
 {
     try
     {
@@ -1102,24 +1104,24 @@ const deleteReservation = async (movieEventID, userID, occuSeats) =>
         {
             user            : userID,
             movieEvent      : movieEventID,
-            occupiedSeats   : occuSeats
+            occupied   : occupied
         });
 
         if (docs != null)
         {
             let oldEvent = await MovieEvent.findById(movieEventID);
 
-            let oldSeats = oldEvent.occuSeats;
-            let newSeats = oldSeats.filter(n => !docs.occupiedSeats.includes(n));
-            // for(let i = 0; i< docs.occuSeats.length; i++){
+            let oldSeats = oldEvent.occupied;
+            let newSeats = oldSeats.filter(n => !docs.occupied.includes(n));
+            // for(let i = 0; i< docs.occupied.length; i++){
 
-            //     const index = oldSeats.indexOf(occuSeats[i]);
+            //     const index = oldSeats.indexOf(occupied[i]);
             //     if (index > -1) {
-            //     array.splice(index, occuSeats[i]);
+            //     array.splice(index, occupied[i]);
             // }
             // }
-            console.log(occuSeats);
-            await MovieEvent.findByIdAndUpdate(movieEventID, {occuSeats : newSeats});
+            console.log(occupied);
+            await MovieEvent.findByIdAndUpdate(movieEventID, {occupied : newSeats}); //change schema name moivieevent 3
 
 
             return 0;

@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const movieEventSchema = new Schema
 (
     {
-        movie :
+        M_id : //M_id
         {
             type        : mongoose.Types.ObjectId,
             required    : true,
@@ -15,17 +15,17 @@ const movieEventSchema = new Schema
             type     : String, 
             required : true
         },
-        startTime :
+        S_time : //S_time
         {
             type     : Number,
             required : true
         },
-        endTime :
+        E_time : //E_time
         {
             type     : Number,
             required : true
         },
-        screeningRoom :
+        gridType : //gridType
         {
             type     : Number,
             required : true
@@ -35,7 +35,7 @@ const movieEventSchema = new Schema
         //     type     : Number,
         //     required : true
         // },
-        occuSeats:   //no of seat available
+        occupied:   //no of seat available //occupied
         [
             {
             type     : Number,

@@ -16,7 +16,7 @@ const reservationSchema = new Schema
             required    : true,
             ref         : "MoiveEvent"
         },
-        occupiedSeats : 
+        occupied : 
         [
             {
 

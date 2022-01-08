@@ -4,13 +4,13 @@ const Schema = mongoose.Schema;
 const movieSchema = new Schema
 (
     {
-        title :
+        name : //name
         {
             type     : String,
             required : true
         },
         
-        poster:
+        movieImage: //movieImage
         {
             type     : String,
             required : true
