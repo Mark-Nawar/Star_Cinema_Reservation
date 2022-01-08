@@ -359,9 +359,9 @@ app.post("/addMovieEvent", async (req,res)=>
     
 });
 
-app.get("/movieEvents/", async (req,res)=>
+app.get("/movieEvents/:movieID", async (req,res)=>
 {
-    let movieID = req.body.movieID;
+    let movieID = req.params.movieID;
 
     //Get all MovieEvent for the id
     res.send(await searchMovieEventByMovieID(movieID) );
@@ -429,11 +429,13 @@ app.post("/movieEvents/", async (req,res)=>
     }
 });
 
-app.post("/deleteMovieEvent",async (req,res) => 
+app.post("/deleteMovieEvent/:movieEventID",async (req,res) => 
 {
 
     let jToken = req.headers["x-access-token"];
     let role = checkToken(jToken,secretStr);
+
+    let movieEventId = req.params.movieEventID;
 
     if (role == -1)             //Unverified
     {
@@ -447,7 +449,7 @@ app.post("/deleteMovieEvent",async (req,res) =>
     }
     else                        //Manager
     {
-        let movieEventId = req.body.movieEventID;
+        
     
         try
         {
@@ -712,9 +714,9 @@ app.post("/addMovie", async (req,res)=>
     
 });
 
-app.get("/movies/", async (req,res)=>
+app.get("/movies/:movieCat", async (req,res)=>
 {
-    let movieCat = req.body.movieCat;
+    let movieCat = req.params.movieCat;
 
     res.send(await searchMovieCat(movieCat));
 });
@@ -744,11 +746,15 @@ app.post("/editMovie", async(req,res)=>
 
 });
 
-app.post("/deleteMovie", async(req,res)=>
+app.post("/deleteMovie/:movieID", async(req,res)=>
 {
     let jToken          = req.headers["x-access-token"];
     console.log(jToken);
     let role            = checkToken(jToken,secretStr);
+
+
+    let movieID = req.params.movieID;
+
 
     console.log(role);
 
@@ -765,7 +771,7 @@ app.post("/deleteMovie", async(req,res)=>
     else                        //Manager
     {
 
-        let movieID = req.body.movieID;
+        
 
         try
         {
