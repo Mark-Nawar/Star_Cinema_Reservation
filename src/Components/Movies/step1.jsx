@@ -2,7 +2,6 @@ import React from 'react'
 import Banner from './Banner'
 import MovieRow from './MovieRow'
 import NavMovies from './NavMovies'
-import StepThree from './step3'
 
 
 
@@ -11,11 +10,12 @@ export const StepOne = () => {
     const imageUrl ="https://i.imgur.com/duNO2Zx.png";
     const categories =[ "Action" , "Drama", "Fiction" ,"Comedy"]
     const fetchURLS = [
-        "apiurlAction.com",
-        "apiurlDrama.com",
-        "apiurlFiction.com",
-        "apiurlComedy.com "
+        "http://localhost:5000/movies/Action",
+        "http://localhost:5000/movies/Drama",
+        "http://localhost:5000/movies/Fiction",
+        "http://localhost:5000/movies/Comedy"
     ]
+
     return (
         <div>
             <NavMovies whereIam={1}/>

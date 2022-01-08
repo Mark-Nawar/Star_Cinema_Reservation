@@ -92,7 +92,7 @@ const PastReservations = () => {
     };
   return (
     <div>
-      <NavMovies whereIam={0} />
+      <NavMovies whereIam={2} />
       <Banner bannerText={bannerText} ImageUrl={imageUrl} />
       <div className="general_timings">
         <div>

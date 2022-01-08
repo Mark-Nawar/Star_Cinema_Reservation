@@ -1,0 +1,16 @@
+.cardRow{
+    min-height: 100vh;
+}
+.cardDash{
+    font-family: "Source Code Pro", monospace;
+    transition: 0.5s;
+    text-align: center;
+    justify-content: center;
+    padding-top: 0;
+}
+.cardDash:hover{
+    transition: transform 500ms;
+    transform: scale(1.08);
+    box-shadow: 0 0 120px rgb(247, 247, 247);
+
+}

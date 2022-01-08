@@ -4,54 +4,67 @@ import { Form, Button, Card, Alert, Container, Image } from "react-bootstrap";
 import { Link, useNavigate } from "react-router-dom";
 import "../Logins/SignUp.css";
 import Loading from "./Loading";
+import axios from "axios";
+import { useJwt } from "react-jwt";
 
 const FormIn = () => {
+  let navigate = useNavigate();
+
   const emailRef = useRef();
   const passwordRef = useRef();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const history = useNavigate();
   // to be added for after JWT ( tokens are ready) validations and api call for signIN
-  //   async function handleSubmit(e) {
-  //     e.preventDefault();
-  //     if (
-  //       !passwordRef.current.value ||
-  //       !passwordConfirmRef.current.value ||
-  //       !emailRef.current.value
-  //     ) {
-  //       return setError("Those are Required Fields");
-  //     }
-  //     if (
-  //       !/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/i.test(
-  //         emailRef.current.value
-  //       )
-  //     ) {
-  //       return setError("Invalid Email Address");
-  //     }
-  //     if (passwordRef.current.value !== passwordConfirmRef.current.value) {
-  //       return setError("Passwords do not match");
-  //     }
-  //     if (
-  //       !/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/.test(
-  //         passwordRef.current.value
-  //       )
-  //     ) {
-  //       return setError(
-  //         "The Password must be at least 8 characters and contains at least : a lowercase, an uppercase and a number "
-  //       );
-  //     }
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!passwordRef.current.value || !emailRef.current.value) {
+      return setError("Those are Required Fields");
+    }
+    if (
+      !/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,}$/.test(
+        passwordRef.current.value
+      )
+    ) {
+      return setError("Wrong Password Format so Wrong Password");
+    }
 
-  //     try {
-  //       setError("");
-  //       setLoading(true);
-  //       await signup(emailRef.current.value, passwordRef.current.value);
-  //       history.push("/login");
-  //     } catch {
-  //       setError("Account Already Exits");
-  //     }
-  //     setLoading(false);
-  //   }
+    const data = {
+      username: emailRef.current.value,
+      password: passwordRef.current.value,
+    };
+    console.log(data);
+    setError("");
+    setLoading(true);
+    axios
+      .post("http://localhost:5000/signin/", data)
+      .then((res) => {
+        console.log(res.data.role);
+        if (res.data == "Invalid username or password") {
+          return setError("Invalid username or password");
+        }
+        localStorage.setItem("token", res.data.token);
+        if (res.data.role == 1) navigate("/step1", { replace: true });
+        else {
+          navigate("/dashBoard", { replace: true });
+        }
+      })
+      .catch((err) => {
+        setError(err.data);
+        setLoading(false);
+      });
+    // try {
+    //   setError("");
+    //   setLoading(true);
+    //   await signup(emailRef.current.value, passwordRef.current.value);
+    //   history.push("/login");
+    // } catch {
+    //   setError("Account Already Exits");
+    // }
+    setLoading(false);
+  }
 
+  //navigate("/signin", { replace: true });
   return (
     <div className="bg-img">
       <Container
@@ -64,21 +77,22 @@ const FormIn = () => {
               {loading ? (
                 <Loading />
               ) : (
-                <Loading />
+                <div className="icon">
+                  <Image
+                    className="align-items-center"
+                    src="images/heart.png"
+                    fluid
+                  />
+                </div>
               )}
               <h2 className="text-center mb-4">Sign In for Star cinema</h2>
 
               {error && <Alert variant="danger">{error}</Alert>}
               {/*  to be repalced with after authentication is finished <Form onSubmit={handleSubmit}> */}
-              <Form className="formTitle">
+              <Form onSubmit={handleSubmit} className="formTitle">
                 <Form.Group id="email">
-                  <Form.Label>Email</Form.Label>
-                  <Form.Control
-                    size="sm"
-                    type="email"
-                    ref={emailRef}
-                    required
-                  />
+                  <Form.Label>User Name</Form.Label>
+                  <Form.Control size="sm" type="name" ref={emailRef} required />
                 </Form.Group>
                 <Form.Group id="password">
                   <Form.Label>password</Form.Label>

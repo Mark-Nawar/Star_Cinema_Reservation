@@ -24,18 +24,24 @@ function NavMovies({ whereIam }) {
       />
 
       <div className="nav_left_data">
-        {whereIam == 1 ?(
-        <Link to="/pastReservations" style={{ textDecoration: "none" }}>
-          <Button variant="dark" size="sm">
-            reservations
-          </Button>
-        </Link>
-        ):(
-        <Link to="/" style={{ textDecoration: "none" }}>
-          <Button variant="dark" size="sm">
-           BackHome
-          </Button>
-        </Link>
+        {whereIam == 1 ? (
+          <Link to="/pastReservations" style={{ textDecoration: "none" }}>
+            <Button variant="dark" size="sm">
+              reservations
+            </Button>
+          </Link>
+        ) : whereIam == 2 ? (
+          <Link to="/" style={{ textDecoration: "none" }}>
+            <Button variant="dark" size="sm">
+              BackHome
+            </Button>
+          </Link>
+        ) : (
+          <Link to="/dashBoard" style={{ textDecoration: "none" }}>
+            <Button variant="dark" size="sm">
+              BackDashBoard
+            </Button>
+          </Link>
         )}
       </div>
     </div>
