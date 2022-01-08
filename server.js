@@ -10,6 +10,8 @@ const CryptoJS = require("crypto-js");
 //Require mogoose for mongoDB
 const mongoose = require("mongoose");
 
+const cors = require("cors");
+
 //Require User model 
 const User  = require("./models/users");
 const Movie = require("./models/movies");
@@ -28,6 +30,8 @@ const port = process.env.PORT || 5000;
 
 //To recognize incoming input as json object
 app.use(express.json());
+
+app.use(cors());
 
 //To be able to read from req.body
 app.use(express.urlencoded({ extended: true }));
