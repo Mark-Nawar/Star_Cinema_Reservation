@@ -2,10 +2,12 @@ import "./SeatReservation.css";
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { faChair } from "@fortawesome/free-solid-svg-icons";
+import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Form, Button } from "react-bootstrap";
 import Banner from "./Banner";
-
-export default function SeatReservation({movie,movieEvent}) {
+import axios from "axios"
+export default function SeatReservation({ movie, movieEvent }) {
   const [selectedSeats, setSelectedSeats] = useState([]);
   const bannerText = "Step 3 : Pick your seat!";
   return (
@@ -46,9 +48,45 @@ function ShowCase() {
   );
 }
 
-function Cinema({ movie, movieEvent,selectedSeats, onSelectedSeatsChange }) {
-
-  const seats = Array.from({ length: 5 *(movieEvent.gridType*2 + 2) }, (_, i) => i);
+function Cinema({ movie, movieEvent, selectedSeats, onSelectedSeatsChange }) {
+  let navigate = useNavigate();
+  const seats = Array.from(
+    { length: 5 * (movieEvent.gridType * 2 + 2) },
+    (_, i) => i
+  );
+  
+  async function handleSubmit(e) { 
+    if(localStorage.getItem('token')== '')
+    {
+      if(window.confirm("Can't register you are a guest, Sign Up ??")){
+        navigate("/signup", { replace: true });
+        return 
+      }
+    }
+    e.preventDefault();
+    const newR = {
+      movieEventID : movieEvent._id,
+      occupied : [...selectedSeats]
+  }
+    // id is auto incremented
+    console.log(newR);
+    const headers = {
+      'x-access-token': localStorage.getItem('token')
+    }
+    axios
+      .post("http://localhost:5000/reserve/", newR ,{
+        headers: headers
+      })
+      .then((res) => {
+        console.log(res.data);
+        alert(res.data);
+      })
+      .catch((err) => {
+        alert("reservation failed");
+      });
+    // //axios.post(insertUrl , newM );
+    
+  }
 
   function handleSelectedState(seat) {
     const isSelected = selectedSeats.includes(seat);
@@ -57,7 +95,7 @@ function Cinema({ movie, movieEvent,selectedSeats, onSelectedSeatsChange }) {
         selectedSeats.filter((selectedSeat) => selectedSeat !== seat)
       );
     } else {
-      onSelectedSeatsChange([seat]);
+      onSelectedSeatsChange([...selectedSeats, seat]);
     }
   }
 
@@ -83,6 +121,16 @@ function Cinema({ movie, movieEvent,selectedSeats, onSelectedSeatsChange }) {
           );
         })}
       </div>
+      <Form onSubmit={handleSubmit}>
+          <Button
+            variant="primary"
+            type="submit"
+            className="w-100 mt-1"
+            
+          >
+            reserve seats
+          </Button>
+        </Form>
     </div>
   );
 }
