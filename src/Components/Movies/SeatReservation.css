@@ -1,0 +1,147 @@
+
+*,
+*::after,
+*::before {
+  box-sizing: border-box;
+}
+.general_ciema {
+  margin: 0;
+  padding: 0;
+  background: #000000;
+  font-family: "Source Code Pro", monospace;
+  color: white;
+  font-size: 14px;
+  min-height: 100vh;
+  display: grid;
+}
+
+.general_com {
+  text-align: center;
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+}
+
+.Movies {
+  margin-bottom: 24px;
+}
+
+.Movies select {
+  appearance: none;
+  background: white;
+  font-size: 14px;
+  margin-left: 12px;
+  border-radius: 4px;
+  padding: 6px 24px;
+}
+
+.ShowCase {
+  margin: 0 0 48px;
+  padding: 0;
+  margin-top: 48px;
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  background: #3b3b3b;
+  padding: 12px;
+  border-radius: 4px;
+  color: #7e7e7e;
+}
+
+.ShowCase li {
+  margin: 0 12px;
+}
+
+.Cinema {
+  margin-bottom: 18px;
+  perspective: 400px;
+
+  display: grid;
+  place-items: center;
+  grid-gap: 24px;
+}
+
+.Cinema .screen {
+  height: 70px;
+  background: white;
+  width: 100%;
+  transform: rotateX(-30deg) scale(1.1);
+  box-shadow: 0 3px 10px 2px;
+}
+
+.Cinema .seats {
+  display: grid;
+  grid-gap: 6px;
+  grid-template-columns: repeat(5, min-content);
+  align-items: center;
+}
+
+.Cinema .seats .seat:nth-of-type(5n + 1) {
+  margin-right: 12px;
+}
+
+.Cinema .seats .seat:nth-of-type(5n + 4) {
+  margin-right: 12px;
+}
+
+.Cinema .seats .seat:not(.occupied):hover,
+.Cinema .seats .seat:not(.occupied):focus {
+  cursor: pointer;
+  color: #7bc47f;
+  transform: scale(1.2);
+}
+
+.Cinema .seats .seat.selected::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 1px;
+  width: 20px;
+  height: 20px;
+  border-radius: 100%;
+  background: transparent;
+  border: 1px solid #7bc47f;
+  animation: show-off 0.8s;
+  visibility: hidden;
+}
+
+@keyframes show-off {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+    visibility: visible;
+  }
+
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
+.seat {
+  display: inline-block;
+  color: #626262;
+  width: 20px;
+  height: 20px;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  transition: transform 0.3s ease-in-out;
+  position: relative;
+  font-size: large;
+  top: 1px;
+}
+
+.seat.selected {
+  color: #7bc47f !important;
+}
+
+.seat.occupied {
+  color: #ffffff;
+}
+
+.iconSelected{
+  color:#7bc47f ;
+}
+.iconOccupied{
+  color: #ffffff;
+}

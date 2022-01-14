@@ -1,0 +1,156 @@
+:root {
+  --bg-color: #000000;
+  --typewriterSpeed: 2s;
+  --typewriterCharacters: 11;
+  --clr-neon: rgb(255, 255, 255);
+  --clr-bg: rgb(0, 0, 0);
+}
+
+*, *:before, *:after {
+	box-sizing: border-box;
+}
+
+.title {
+  font-size: clamp(1rem, 3vw + 1rem, 4rem);
+  color: #ffffff;
+  position: absolute;
+  font-family: "Source Code Pro", monospace;
+  width: max-content;
+  top: 30%;
+  left: 48%;
+  transform: translate(-50%, -50%);
+  font-weight:200;
+}
+.title::before,
+.title::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.title::before {
+  background: var(--bg-color);
+  animation: typewriter var(--typewriterSpeed)
+    steps(var(--typewriterCharacters)) 1s forwards;
+}
+
+.title::after {
+  width: 0.125em;
+  background: rgb(255, 255, 255);
+  animation: typewriter var(--typewriterSpeed)
+      steps(var(--typewriterCharacters)) 1s forwards,
+    blink 750ms steps(var(--typewriterCharacters)) infinite;
+}
+
+.subtitle {
+  color: rgba(255, 255, 255);
+  font-family: "Source Code Pro", monospace;
+  text-shadow: 0 0 2px #ffffff, 0 0 3px #ffffff;
+  position: absolute;
+  top: 38%;
+  left: 25%;
+  font-size: 2rem;
+  font-weight:200;
+  opacity: 0;
+  transform: translateY(3rem);
+  animation: fadeInUp 2s ease calc(var(--typewriterSpeed) + 2s) forwards;
+}
+
+@keyframes typewriter {
+  to {
+    left: 100%;
+  }
+}
+
+@keyframes blink {
+  to {
+    background: transparent;
+  }
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+
+.neon-button {
+  font-family: "Source Code Pro", monospace;
+  font-weight: bolder;
+  font-size: 1rem;
+  display:grid;
+  position:absolute;
+  z-index:12;
+  display: inline-block;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--clr-neon);
+  border: var(--clr-neon) 0.125em solid;
+  padding: 0.25em 1em;
+  border-radius: 0.25em;
+  opacity: 0;
+  text-shadow: 0 0 0.125em hsl(0 0% 100% / 0.3), 0 0 0.45em currentColor;
+  transform: translateY(5rem);
+  box-shadow: inset 0 0 0.5em 0 var(--clr-neon), 0 0 0.5em 0 var(--clr-neon);
+  animation: fadeInUp 2s ease calc(var(--typewriterSpeed) + 2s) forwards;
+
+
+}
+
+
+.neon-button::before {
+  pointer-events: none;
+  content: "";
+  position: absolute;
+  background: var(--clr-neon);
+  top: 120%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  transform: perspective(1em) rotateX(40deg) scale(1, 0.35);
+  filter: blur(1em);
+  opacity: 0.7;
+}
+
+.neon-button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  box-shadow: 0 0 2em 0.5em var(--clr-neon);
+  opacity: 0;
+  background-color: var(--clr-neon);
+  z-index: -1;
+  transition: opacity 100ms linear;
+}
+
+.neon-button:hover,
+.neon-button:focus {
+  color: var(--clr-bg);
+  text-shadow: none;
+}
+
+.neon-button:hover::before,
+.neon-button:focus::before {
+  opacity: 1;
+}
+.neon-button:hover::after,
+.neon-button:focus::after {
+  opacity: 1;
+}
+
+.signup{
+  top:55%;
+  left:30%;
+}
+.signin{
+  top:55%;
+  left:60%;
+}
