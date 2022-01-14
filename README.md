@@ -1,4 +1,9 @@
+<p align="center">
+  <img src="https://user-images.githubusercontent.com/62334815/149527874-e1da71df-ebdf-42e1-bc88-627a97a2ccac.png" />
+</p>
+
  <h3>This project is build with:</h3>
+
  <ul>
  <li>React Js
  <li>Bootstrap
