@@ -7,7 +7,6 @@
  <ul>
  <li>React Js
  <li>Bootstrap
- <li>Material UI for fast UI plugins
  <li>Three.Js for 3-d animations
  <li>Json-server
  <li>React Router
