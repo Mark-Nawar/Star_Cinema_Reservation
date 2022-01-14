@@ -10,6 +10,7 @@
  <li>Three.Js for 3-d animations
  <li>Json-server
  <li>React Router
+ <li> Backend( NodeJs and MongoDB)
     
 note : check the file of the dependencies for more information about the packages that were used
 note: we are using npm as a package manager you are welcomed to use yarn just check the coresponding commands
