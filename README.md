@@ -21,7 +21,7 @@ note : To use React you need to download Nodejs First run ```$ node -v``` in a p
 # Follow this Instructions carefully      
 1-Clone Repo ( use this command to push easily ( git push ))
 ```
- $ git clone -b Mark https://github.com/ahmedmoh1234/ConsultationProject.git
+ $ git clone -b main https://github.com/Mark-Nawar/Star_Cinema_Reservation.git
 ```
 2-Change to project dir. in my local machine it was cinema replace this with the name of the folder you cloned the project into
 ```
